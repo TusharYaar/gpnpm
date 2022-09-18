@@ -1,10 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-// import App from "./App";
+import AppContainer from "./AppContainer";
 
 function render() {
   const container = document.getElementById("root");
   const root = createRoot(container);
-  root.render(<h1>Hello </h1>);
+  root.render(<AppContainer />);
 }
 render();
