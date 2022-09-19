@@ -1,4 +1,5 @@
 import { Menu, app } from "electron";
+import { openChooseDirectoryDialog } from "./folders";
 
 const relaunchApp = () => {
   app.relaunch();
@@ -59,10 +60,7 @@ const template: Electron.MenuItemConstructorOptions[] = [
       {
         id: "add_project_folder",
         label: "Add Project Folder",
-
-        click: () => {
-          ("");
-        },
+        click: openChooseDirectoryDialog,
       },
       {
         id: "scan",

@@ -1,5 +1,5 @@
 class AppSettings {
-  version = "0.1";
+  static version = "0.1";
   created: Date;
   modified: Date;
   theme = "light";
@@ -18,9 +18,6 @@ class AppSettings {
 
   updateTheme(theme: string) {
     this.theme = theme;
-  }
-  addProjectFolder(folder: string) {
-    this.projectFolders.push(folder);
   }
 }
 
