@@ -1,11 +1,9 @@
-import { app } from "electron";
 import fs from "fs";
-import path from "path";
 import AppSettings from "./AppSettings";
 
+import { APP_SETTINGS_FILE_PATH } from "../../constants";
+
 let APP_SETTINGS = new AppSettings();
-const APP_SETTINGS_FILE_NAME = "settings.json";
-const APP_SETTINGS_FILE_PATH = path.join(app.getPath("appData"), "gpnpm", APP_SETTINGS_FILE_NAME);
 
 export const updateAppSettings = async (settings?: AppSettings) => {
   const modified = new Date();

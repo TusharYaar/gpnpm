@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
-import { getAppSettings } from "./storage";
+
+import * as PROJECT from "./modules/project";
 
 import "./menu";
 
@@ -16,9 +17,11 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
+let mainWindow: BrowserWindow;
+
 const createWindow = (): void => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
     minHeight: 300,
@@ -37,7 +40,10 @@ const createWindow = (): void => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", createWindow);
+app.on("ready", () => {
+  PROJECT.attachListeners();
+  createWindow();
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

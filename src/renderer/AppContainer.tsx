@@ -1,11 +1,18 @@
 import React from "react";
-import { MantineProvider } from "@mantine/core";
+import { AppShell, MantineProvider } from "@mantine/core";
 import App from "./App";
+import { AppProvider } from "./context/AppContext";
+import Menubar from "./Conponents/Menubar";
+
 const AppContainer = () => {
   return (
-    <MantineProvider withGlobalStyles withNormalizeCSS>
-      <App />
-    </MantineProvider>
+    <AppProvider>
+      <MantineProvider withGlobalStyles withNormalizeCSS>
+        <AppShell navbar={<Menubar />}>
+          <App />
+        </AppShell>
+      </MantineProvider>
+    </AppProvider>
   );
 };
 

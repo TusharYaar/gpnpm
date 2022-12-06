@@ -1,7 +1,7 @@
 {
   "name": "gpnpm",
   "productName": "gpnpm",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "My Electron application description",
   "main": ".webpack/main",
   "scripts": {
@@ -43,9 +43,9 @@
         }
       ],
       "plugins": [
-        [
-          "@electron-forge/plugin-webpack",
-          {
+        {
+          "name": "@electron-forge/plugin-webpack",
+          "config": {
             "mainConfig": "./webpack.main.config.js",
             "renderer": {
               "config": "./webpack.renderer.config.js",
@@ -53,42 +53,46 @@
                 {
                   "html": "./src/renderer/index.html",
                   "js": "./src/main/renderer.ts",
-                  "name": "main_window"
+                  "name": "main_window",
+                  "preload": {
+                    "js": "./src/preload.ts"
+                  }
                 }
               ]
             }
           }
-        ]
+        }
       ]
     }
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.66",
-    "@electron-forge/maker-deb": "^6.0.0-beta.66",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.66",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.66",
-    "@electron-forge/maker-zip": "^6.0.0-beta.66",
-    "@electron-forge/plugin-webpack": "6.0.0-beta.66",
-    "@types/react": "^18.0.20",
-    "@types/react-dom": "^18.0.6",
+    "@electron-forge/cli": "^6.0.4",
+    "@electron-forge/maker-deb": "^6.0.4",
+    "@electron-forge/maker-rpm": "^6.0.4",
+    "@electron-forge/maker-squirrel": "^6.0.4",
+    "@electron-forge/maker-zip": "^6.0.4",
+    "@electron-forge/plugin-webpack": "6.0.4",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.9",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@vercel/webpack-asset-relocator-loader": "1.7.3",
     "css-loader": "^6.0.0",
-    "electron": "20.1.4",
+    "electron": "22.0.0",
     "eslint": "^8.0.1",
     "eslint-plugin-import": "^2.25.0",
     "fork-ts-checker-webpack-plugin": "^7.2.1",
     "node-loader": "^2.0.0",
     "style-loader": "^3.0.0",
     "ts-loader": "^9.2.2",
-    "typescript": "~4.5.4"
+    "typescript": "^4.9.3"
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
-    "@mantine/core": "^5.3.3",
-    "@mantine/dropzone": "^5.3.3",
-    "@mantine/hooks": "^5.3.3",
+    "@mantine/core": "^5.9.2",
+    "@mantine/form": "^5.9.2",
+    "@mantine/hooks": "^5.9.2",
+    "date-fns": "^2.29.3",
     "electron-squirrel-startup": "^1.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
