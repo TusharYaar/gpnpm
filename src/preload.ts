@@ -3,5 +3,10 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("projectAPI", {
-  openProjectDialog: () => ipcRenderer.send("PROJECT:open-dialog"),
+  openFolderDialog: () => ipcRenderer.invoke("PROJECT:open-folder-dialog"),
+  addFolders: (folders: string[]) => ipcRenderer.send("PROJECT:add-folders", folders),
+});
+
+contextBridge.exposeInMainWorld("systemAPI", {
+  getSystemInfo: () => ipcRenderer.invoke("SYSTEM:get-info"),
 });

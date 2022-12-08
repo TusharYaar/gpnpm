@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from "electron";
 
 import * as PROJECT from "./modules/project";
+import * as SYSTEM from "./modules/system";
 
 import "./menu";
 
@@ -16,6 +17,7 @@ if (require("electron-squirrel-startup")) {
   // eslint-disable-line global-require
   app.quit();
 }
+app.disableHardwareAcceleration();
 
 let mainWindow: BrowserWindow;
 
@@ -34,7 +36,7 @@ const createWindow = (): void => {
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
@@ -42,6 +44,7 @@ const createWindow = (): void => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
   PROJECT.attachListeners();
+  SYSTEM.attachListeners();
   createWindow();
 });
 
