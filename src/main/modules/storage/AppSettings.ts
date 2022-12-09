@@ -1,23 +1,22 @@
 class AppSettings {
-  static version = "0.1";
+  static latestVersion = "0.1";
+  version = "0.1";
   created: Date;
   modified: Date;
-  theme = "light";
-
-  projectFolders: string[] = [];
-
-  projects: string[] = [];
-
-  nodePackages: string[];
+  settings = {
+    theme: "light",
+    platform: "win32",
+  };
+  folders: string[] = [];
+  allPackages: { [key: string]: string[] } = {};
+  // TODO: MAKE A TYPE
+  projects: unknown = {};
 
   constructor() {
     const currentDate = new Date();
     this.created = currentDate;
     this.modified = currentDate;
-  }
-
-  updateTheme(theme: string) {
-    this.theme = theme;
+    this.settings.platform = process.platform;
   }
 }
 

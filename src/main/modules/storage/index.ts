@@ -29,16 +29,20 @@ export const getAppSettings = (readFromFile = false) => {
   APP_SETTINGS = settings;
 };
 
-export const addNewProjectFolders = (folders: string[]) => {
-  folders.forEach((folder) => {
-    console.log(folder);
-    const alreadyExists = APP_SETTINGS.projectFolders.find((f) => f === folder);
-    if (!alreadyExists) {
-      APP_SETTINGS.projectFolders.push(folder);
-    }
-  });
+export const addNewFoldersToStorage = (folders: string[]) => {
+  console.log(folders);
+  const unique = new Set([...APP_SETTINGS.folders, ...folders]);
+  APP_SETTINGS.folders = Array.from(unique);
   updateAppSettings();
-  return true;
+};
+
+export const addNewPackages = (packages: { [key: string]: string }, file: string) => {
+  for (const _package in packages) {
+    if (APP_SETTINGS.allPackages[_package]) {
+      if (!APP_SETTINGS.allPackages[_package].includes(file)) APP_SETTINGS.allPackages[_package].push(file);
+    } else APP_SETTINGS.allPackages[_package] = [file];
+  }
+  updateAppSettings();
 };
 
 getAppSettings(true);

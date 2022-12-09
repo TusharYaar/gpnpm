@@ -46,6 +46,7 @@ app.on("ready", () => {
   PROJECT.attachListeners();
   SYSTEM.attachListeners();
   createWindow();
+  sendUpdateState("ready");
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -65,5 +66,16 @@ app.on("activate", () => {
   }
 });
 
+export const sendUpdateState = (state: string) => {
+  if (mainWindow) mainWindow.webContents.send("SYSTEM:update-state", state);
+};
+
+export const sendInstruction = <T>(data: { instruction: string; data: T }) => {
+  if (mainWindow) mainWindow.webContents.send("SYSTEM:instruction", data);
+};
+
+export const throwError = (error: string) => {
+  if (mainWindow) mainWindow.webContents.send("SYSTEM:error", error);
+};
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.

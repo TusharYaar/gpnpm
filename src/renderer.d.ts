@@ -6,8 +6,10 @@ export interface projectAPI {
 }
 
 export interface systemAPI {
-  // TODO: Update type
   getSystemInfo: () => Promise<SystemInfo>;
+  onUpdateState: (callback) => void;
+  onNewInstruction: (callback) => void;
+  onError: (callback) => void;
 }
 
 declare global {

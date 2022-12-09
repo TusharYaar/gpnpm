@@ -1,4 +1,5 @@
 import { Menu, app } from "electron";
+import { sendInstruction, sendUpdateState, throwError } from ".";
 
 const relaunchApp = () => {
   app.relaunch();
@@ -33,6 +34,16 @@ const template: Electron.MenuItemConstructorOptions[] = [
             {
               role: "toggleDevTools" as const,
             },
+            {
+              id: "sendState",
+              label: "Send State",
+              click: () => sendUpdateState("Loading"),
+            },
+            {
+              id: "throwError",
+              label: "Throw Error",
+              click: () => throwError("Error From Menu"),
+            },
           ],
         },
       ]),
@@ -56,11 +67,11 @@ const template: Electron.MenuItemConstructorOptions[] = [
   {
     label: "Projects",
     submenu: [
-      // {
-      //   id: "add_project_folder",
-      //   label: "Add Project Folder",
-      //   click: openChooseDirectoryDialog,
-      // },
+      {
+        id: "add_folder",
+        label: "Add Folder/s",
+        click: () => sendInstruction({ instruction: "open_add_folder", data: null }),
+      },
       {
         id: "scan",
         label: "Scan Folders",

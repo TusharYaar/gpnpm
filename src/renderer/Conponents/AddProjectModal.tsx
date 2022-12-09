@@ -22,25 +22,10 @@ const AddProjectModal = ({ projects }: Props) => {
     addFolders(_projects.filter((f, i) => select[i]));
   }, []);
 
-  // const folderStructure = useMemo(() => {
-  //   const asArray = projects.map((project) => project.split("\\").filter((t) => t !== "package.json"));
-  //   const structure: Obj = {};
-  //   asArray.forEach((path) => {
-  //     path.forEach((dir) => {
-  //       // if (structure[dir])
-  //     });
-  //   });
-
-  //   console.log(structure);
-  //   return structure;
-  // }, [projects]);
   return (
     <Modal
       opened={true}
-      withCloseButton={false}
-      onClose={() => {
-        console.log("");
-      }}
+      onClose={() => handleAddFolders([], [])}
       title="Choose Projects To Add"
       size="calc(100vw - 87px)"
     >

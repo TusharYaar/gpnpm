@@ -1,8 +1,9 @@
 import { ipcMain, dialog } from "electron";
 import { readdir, lstat } from "node:fs/promises";
 import { join as pathJoin } from "path";
-
+import fs from "fs";
 import { EXCLUDED_FOLDERS } from "../../constants";
+import { addNewFoldersToStorage, addNewPackages, updateAppSettings } from "../storage";
 
 export const attachListeners = () => {
   ipcMain.handle("PROJECT:open-folder-dialog", handleOpenFolderDialog);
@@ -43,5 +44,21 @@ export const searchForFile = async (file: string, path: string) => {
 };
 
 const handleAddFolders = (folders: string[]) => {
-  console.log(folders);
+  addNewFoldersToStorage(folders);
+  for (const index in folders) {
+    const file = getPackageJSON(pathJoin(folders[index], "package.json"));
+    if (file !== null) {
+      addNewPackages(file.dependencies, pathJoin(folders[index], "package.json"));
+    }
+  }
+  updateAppSettings();
+};
+
+const getPackageJSON = (path: string) => {
+  const exists = fs.existsSync(path);
+  if (exists) {
+    const buffer = fs.readFileSync(path, "utf-8");
+    const _file = JSON.parse(buffer.toString());
+    return _file;
+  } else return null;
 };
