@@ -6,10 +6,6 @@ type Props = {
   projects: string[];
 };
 
-// type Obj = {
-//   [key: string]: string;
-// };
-
 const AddProjectModal = ({ projects }: Props) => {
   const [selected, setSelected] = useState(Array(projects.length).fill(true));
   const { addFolders } = useApp();

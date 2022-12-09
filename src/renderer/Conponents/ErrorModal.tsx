@@ -1,10 +1,18 @@
 import { Modal } from "@mantine/core";
 import React from "react";
 
-const ErrorModal = ({ error, dismissError }: { error: string; dismissError: () => void }) => {
+type Props = {
+  error: {
+    error: string;
+    id: string;
+  };
+  dismissError: (id: string) => void;
+};
+
+const ErrorModal = ({ error, dismissError }: Props) => {
   return (
-    <Modal opened={true} onClose={dismissError}>
-      {error}
+    <Modal opened={true} onClose={() => dismissError(error.id)}>
+      {error.error}
     </Modal>
   );
 };

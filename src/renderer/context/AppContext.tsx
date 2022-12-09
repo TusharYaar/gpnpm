@@ -26,11 +26,16 @@ export const useApp = () => useContext(AppContext);
 export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
   const [projectOptions, setProjectOptions] = useState([]);
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<{ error: string; id: string }[]>([]);
   const [systemState, setSystemState] = useState("loading");
 
-  const dismissError = useCallback(() => {
-    setError("");
+  const dismissError = useCallback((id: string) => {
+    setError((prev) => prev.filter((err) => err.id !== id));
+  }, []);
+
+  const throwError = useCallback((error: string) => {
+    const id = `${new Date().toJSON()}-${(Math.random() * 10000).toFixed(5)}`;
+    setError((prev) => [...prev, { error, id }]);
   }, []);
 
   const openFileAddDialog = useCallback(async () => {
@@ -41,7 +46,7 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
         else setProjectOptions(response.filePaths);
       }
     } catch (e) {
-      setError(e.message || e);
+      throwError(e.message || e);
     }
   }, []);
 
@@ -72,7 +77,7 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
 
   useEffect(() => {
     window.systemAPI.onUpdateState((_event: IpcRendererEvent, value: string) => setSystemState(value));
-    window.systemAPI.onError((_event: IpcRendererEvent, value: string) => setError(value));
+    window.systemAPI.onError((_event: IpcRendererEvent, value: string) => throwError(value));
   }, []);
 
   useEffect(() => {
@@ -90,7 +95,7 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
       }}
     >
       {projectOptions.length > 0 && <AddProjectModal projects={projectOptions} />}
-      {error.length > 0 && <ErrorModal error={error} dismissError={dismissError} />}
+      {error.length > 0 && <ErrorModal error={error[0]} dismissError={dismissError} />}
       {children}
     </AppContext.Provider>
   );
