@@ -7,10 +7,11 @@ class AppSettings {
     theme: "light",
     platform: "win32",
   };
+  scannedFolders: string[] = [];
   folders: string[] = [];
+  projects: string[] = [];
   allPackages: { [key: string]: string[] } = {};
   // TODO: MAKE A TYPE
-  projects: unknown = {};
 
   constructor() {
     const currentDate = new Date();

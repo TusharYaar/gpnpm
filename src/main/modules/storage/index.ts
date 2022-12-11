@@ -15,7 +15,7 @@ export const updateAppSettings = async (settings?: AppSettings) => {
   }
 };
 
-export const getAppSettings = (readFromFile = false) => {
+export const getAppSettings = (readFromFile = false, callback?: () => void) => {
   if (!readFromFile) return APP_SETTINGS;
   const settingsExist = fs.existsSync(APP_SETTINGS_FILE_PATH);
   let settings: AppSettings;
@@ -26,11 +26,11 @@ export const getAppSettings = (readFromFile = false) => {
     settings = new AppSettings();
     updateAppSettings();
   }
-  APP_SETTINGS = settings;
+  APP_SETTINGS = { ...APP_SETTINGS, ...settings };
+  if (callback) callback();
 };
 
 export const addNewFoldersToStorage = (folders: string[]) => {
-  console.log(folders);
   const unique = new Set([...APP_SETTINGS.folders, ...folders]);
   APP_SETTINGS.folders = Array.from(unique);
   updateAppSettings();
@@ -42,6 +42,19 @@ export const addNewPackages = (packages: { [key: string]: string }, file: string
       if (!APP_SETTINGS.allPackages[_package].includes(file)) APP_SETTINGS.allPackages[_package].push(file);
     } else APP_SETTINGS.allPackages[_package] = [file];
   }
+  updateAppSettings();
+};
+
+export const addScannedFoldersToStorage = (folders: string[]) => {
+  if (APP_SETTINGS.scannedFolders) APP_SETTINGS.scannedFolders.push(...folders);
+  else APP_SETTINGS.scannedFolders = folders;
+  updateAppSettings();
+};
+
+export const addNewProjectToStorage = (projects: string[]) => {
+  if (APP_SETTINGS.projects) APP_SETTINGS.projects.push(...projects);
+  else APP_SETTINGS.projects = projects;
+
   updateAppSettings();
 };
 

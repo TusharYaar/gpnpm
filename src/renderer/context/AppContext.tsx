@@ -1,3 +1,4 @@
+import { Title } from "@mantine/core";
 import { IpcRendererEvent } from "electron";
 import React, { useContext, createContext, useCallback, useState, useEffect } from "react";
 import { SystemInfo } from "../../types";
@@ -7,6 +8,8 @@ import ErrorModal from "../Conponents/ErrorModal";
 type ContextProps = {
   openFileAddDialog: () => void;
   systemInfo: SystemInfo | null;
+  // TODO: ADD A TYPE
+  systemState: any;
   addFolders: (projects: string[]) => void;
 };
 
@@ -19,6 +22,7 @@ const AppContext = createContext<ContextProps>({
     return;
   },
   systemInfo: null,
+  systemState: null,
 });
 
 export const useApp = () => useContext(AppContext);
@@ -92,8 +96,10 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
         openFileAddDialog,
         systemInfo,
         addFolders,
+        systemState,
       }}
     >
+      <Title align="center">{systemState}</Title>
       {projectOptions.length > 0 && <AddProjectModal projects={projectOptions} />}
       {error.length > 0 && <ErrorModal error={error[0]} dismissError={dismissError} />}
       {children}

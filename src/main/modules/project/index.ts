@@ -1,31 +1,39 @@
-import { ipcMain, dialog } from "electron";
+import { ipcMain, dialog, IpcMainInvokeEvent } from "electron";
 import { readdir, lstat } from "node:fs/promises";
 import { join as pathJoin } from "path";
 import fs from "fs";
 import { EXCLUDED_FOLDERS } from "../../constants";
-import { addNewFoldersToStorage, addNewPackages, updateAppSettings } from "../storage";
+import { addNewFoldersToStorage, addNewPackages, addNewProjectToStorage, addScannedFoldersToStorage } from "../storage";
+import { sendUpdateState } from "../../index";
 
 export const attachListeners = () => {
   ipcMain.handle("PROJECT:open-folder-dialog", handleOpenFolderDialog);
-  ipcMain.on("PROJECT:add-folders", (event, folders: string[]) => handleAddFolders(folders));
+  ipcMain.on("PROJECT:add-folders", handleAddFolders);
   console.log("ATTACHED PROJECTS");
 };
 
 const handleOpenFolderDialog = async () => {
   //
+  sendUpdateState("wait_for_choose_folders");
   const result = await dialog.showOpenDialog({ properties: ["openDirectory", "multiSelections"] });
-  if (result.canceled) return result;
-  const allPacakges = [];
+  if (result.canceled || result.filePaths.length === 0) {
+    sendUpdateState("idle");
+    return result;
+  }
+
+  addScannedFoldersToStorage(result.filePaths);
+  sendUpdateState("searching_for_projects");
+
+  const allPackages = [];
   for (const _path in result.filePaths) {
     const packages = await searchForFile("package.json", result.filePaths[_path]);
-    console.log({ packages });
-    allPacakges.push(...packages);
-    return { cancelled: false, filePaths: allPacakges };
+    allPackages.push(...packages);
+    return { cancelled: false, filePaths: allPackages };
   }
+  sendUpdateState("idle");
 };
 
 export const searchForFile = async (file: string, path: string) => {
-  console.log(path);
   const projects: string[] = [];
   const list = await readdir(path);
   if (list.includes(file)) return [pathJoin(path, file)];
@@ -43,15 +51,20 @@ export const searchForFile = async (file: string, path: string) => {
   return projects;
 };
 
-const handleAddFolders = (folders: string[]) => {
+const handleAddFolders = (_event: IpcMainInvokeEvent, folders: string[]) => {
+  sendUpdateState("getting_dependencies");
   addNewFoldersToStorage(folders);
+  const projects = [];
   for (const index in folders) {
     const file = getPackageJSON(pathJoin(folders[index], "package.json"));
     if (file !== null) {
       addNewPackages(file.dependencies, pathJoin(folders[index], "package.json"));
+      projects.push(pathJoin(folders[index], "package.json"));
     }
   }
-  updateAppSettings();
+  addNewProjectToStorage(projects);
+  sendUpdateState("idle");
+  return true;
 };
 
 const getPackageJSON = (path: string) => {
