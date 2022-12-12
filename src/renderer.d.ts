@@ -1,3 +1,4 @@
+import AppSettings from "./main/modules/storage/AppSettings";
 import { SystemInfo } from "./types";
 
 export interface projectAPI {
@@ -7,9 +8,11 @@ export interface projectAPI {
 
 export interface systemAPI {
   getSystemInfo: () => Promise<SystemInfo>;
-  onUpdateState: (callback) => void;
+  getStore: () => Promise<AppSettings>;
+  onUpdateCurrentState: (callback) => void;
   onNewInstruction: (callback) => void;
   onError: (callback) => void;
+  onUpdateStore: (callback) => void;
 }
 
 declare global {

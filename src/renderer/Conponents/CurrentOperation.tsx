@@ -3,8 +3,8 @@ import React from "react";
 import { useApp } from "../context/AppContext";
 
 const CurrentOperation = () => {
-  const { systemState } = useApp();
-  return <Text fz="xs">{JSON.stringify(systemState)}</Text>;
+  const { systemCurrentState } = useApp();
+  return <Text fz="xs">{JSON.stringify(systemCurrentState)}</Text>;
 };
 
 export default CurrentOperation;

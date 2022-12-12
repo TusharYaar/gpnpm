@@ -9,7 +9,9 @@ contextBridge.exposeInMainWorld("projectAPI", {
 
 contextBridge.exposeInMainWorld("systemAPI", {
   getSystemInfo: () => ipcRenderer.invoke("SYSTEM:get-info"),
-  onUpdateState: (callback: () => void) => ipcRenderer.on("SYSTEM:update-state", callback),
+  getStore: () => ipcRenderer.invoke("STORAGE:get-store"),
+  onUpdateCurrentState: (callback: () => void) => ipcRenderer.on("SYSTEM:update-current-state", callback),
   onNewInstruction: (callback: () => void) => ipcRenderer.on("SYSTEM:instruction", callback),
   onError: (callback: () => void) => ipcRenderer.on("SYSTEM:error", callback),
+  onUpdateStore: (callback: () => void) => ipcRenderer.on("SYSTEM-update-store", callback),
 });

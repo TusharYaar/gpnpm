@@ -1,6 +1,7 @@
 import { Title } from "@mantine/core";
 import { IpcRendererEvent } from "electron";
 import React, { useContext, createContext, useCallback, useState, useEffect } from "react";
+import AppSettings from "../../main/modules/storage/AppSettings";
 import { SystemInfo } from "../../types";
 import AddProjectModal from "../Conponents/AddProjectModal";
 import ErrorModal from "../Conponents/ErrorModal";
@@ -9,7 +10,8 @@ type ContextProps = {
   openFileAddDialog: () => void;
   systemInfo: SystemInfo | null;
   // TODO: ADD A TYPE
-  systemState: any;
+  systemCurrentState: unknown;
+  store: AppSettings | null;
   addFolders: (projects: string[]) => void;
 };
 
@@ -22,7 +24,8 @@ const AppContext = createContext<ContextProps>({
     return;
   },
   systemInfo: null,
-  systemState: null,
+  systemCurrentState: null,
+  store: null,
 });
 
 export const useApp = () => useContext(AppContext);
@@ -31,7 +34,8 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
   const [projectOptions, setProjectOptions] = useState([]);
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [error, setError] = useState<{ error: string; id: string }[]>([]);
-  const [systemState, setSystemState] = useState("loading");
+  const [systemCurrentState, setSystemCurrentState] = useState("loading");
+  const [store, setStore] = useState(null);
 
   const dismissError = useCallback((id: string) => {
     setError((prev) => prev.filter((err) => err.id !== id));
@@ -72,6 +76,8 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
 
   const getSystemInfo = useCallback(async () => {
     const response = await window.systemAPI.getSystemInfo();
+    const store = await window.systemAPI.getStore();
+    setStore(store);
     setSystemInfo(response);
   }, []);
 
@@ -80,8 +86,9 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
   }, [getSystemInfo]);
 
   useEffect(() => {
-    window.systemAPI.onUpdateState((_event: IpcRendererEvent, value: string) => setSystemState(value));
+    window.systemAPI.onUpdateCurrentState((_event: IpcRendererEvent, value: string) => setSystemCurrentState(value));
     window.systemAPI.onError((_event: IpcRendererEvent, value: string) => throwError(value));
+    window.systemAPI.onUpdateStore((_event: IpcRendererEvent, value: AppSettings) => setStore(value));
   }, []);
 
   useEffect(() => {
@@ -96,13 +103,14 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
         openFileAddDialog,
         systemInfo,
         addFolders,
-        systemState,
+        systemCurrentState,
+        store,
       }}
     >
-      <Title align="center">{systemState}</Title>
       {projectOptions.length > 0 && <AddProjectModal projects={projectOptions} />}
       {error.length > 0 && <ErrorModal error={error[0]} dismissError={dismissError} />}
       {children}
+      {JSON.stringify(store)}
     </AppContext.Provider>
   );
 };

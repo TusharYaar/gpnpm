@@ -2,8 +2,15 @@ import fs from "fs";
 import AppSettings from "./AppSettings";
 
 import { APP_SETTINGS_FILE_PATH } from "../../constants";
+import { updateStore } from "../../index";
+import { ipcMain } from "electron";
 
 let APP_SETTINGS = new AppSettings();
+
+export const attachListeners = () => {
+  ipcMain.handle("STORAGE:get-store", () => APP_SETTINGS);
+  console.log("ATTACHED STORAGE");
+};
 
 export const updateAppSettings = async (settings?: AppSettings) => {
   const modified = new Date();
@@ -13,6 +20,7 @@ export const updateAppSettings = async (settings?: AppSettings) => {
   } else {
     fs.writeFileSync(APP_SETTINGS_FILE_PATH, JSON.stringify(APP_SETTINGS, null, 4));
   }
+  if (updateStore) updateStore(APP_SETTINGS);
 };
 
 export const getAppSettings = (readFromFile = false, callback?: () => void) => {
