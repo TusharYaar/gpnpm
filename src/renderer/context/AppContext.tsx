@@ -1,10 +1,9 @@
-import { Title } from "@mantine/core";
 import { IpcRendererEvent } from "electron";
 import React, { useContext, createContext, useCallback, useState, useEffect } from "react";
 import AppSettings from "../../main/modules/storage/AppSettings";
 import { SystemInfo } from "../../types";
-import AddProjectModal from "../Conponents/AddProjectModal";
-import ErrorModal from "../Conponents/ErrorModal";
+import AddProjectModal from "../components/AddProjectModal";
+import ErrorModal from "../components/ErrorModal";
 
 type ContextProps = {
   openFileAddDialog: () => void;
@@ -34,7 +33,7 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
   const [projectOptions, setProjectOptions] = useState([]);
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [error, setError] = useState<{ error: string; id: string }[]>([]);
-  const [systemCurrentState, setSystemCurrentState] = useState("loading");
+  const [systemCurrentState, setSystemCurrentState] = useState("idle");
   const [store, setStore] = useState(null);
 
   const dismissError = useCallback((id: string) => {
@@ -110,7 +109,6 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
       {projectOptions.length > 0 && <AddProjectModal projects={projectOptions} />}
       {error.length > 0 && <ErrorModal error={error[0]} dismissError={dismissError} />}
       {children}
-      {JSON.stringify(store)}
     </AppContext.Provider>
   );
 };

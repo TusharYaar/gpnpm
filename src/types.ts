@@ -3,3 +3,9 @@ export interface SystemInfo {
 }
 
 export type SystemUpdateStates = "starting" | "getting-packages" | "getting-package-details" | "";
+
+export type Package = {
+  [key: string]: {
+    usedIn: string[];
+  };
+};

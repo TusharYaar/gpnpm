@@ -47,8 +47,9 @@ export const addNewFoldersToStorage = (folders: string[]) => {
 export const addNewPackages = (packages: { [key: string]: string }, file: string) => {
   for (const _package in packages) {
     if (APP_SETTINGS.allPackages[_package]) {
-      if (!APP_SETTINGS.allPackages[_package].includes(file)) APP_SETTINGS.allPackages[_package].push(file);
-    } else APP_SETTINGS.allPackages[_package] = [file];
+      if (!APP_SETTINGS.allPackages[_package].usedIn.includes(file))
+        APP_SETTINGS.allPackages[_package].usedIn.push(file);
+    } else APP_SETTINGS.allPackages[_package] = { usedIn: [file] };
   }
   updateAppSettings();
 };

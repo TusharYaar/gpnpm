@@ -2,11 +2,14 @@ import React from "react";
 import { AppShell, Header, MantineProvider } from "@mantine/core";
 import App from "./pages/App";
 import { AppProvider } from "./context/AppContext";
-import Menubar from "./Conponents/Menubar";
-import CurrentOperation from "./Conponents/CurrentOperation";
+import Menubar from "./components/Menubar";
+import CurrentOperation from "./components/CurrentOperation";
 
 import { Routes, Route, HashRouter } from "react-router-dom";
 import AllPackages from "./pages/AllPackages";
+import AllProjects from "./pages/AllProjects";
+import Folders from "./pages/Folders";
+import Settings from "./pages/Settings";
 
 const AppContainer = () => {
   return (
@@ -24,6 +27,9 @@ const AppContainer = () => {
             <Routes>
               <Route path="/" element={<App />} />
               <Route path="/all_packages" element={<AllPackages />} />
+              <Route path="/all_projects" element={<AllProjects />} />
+              <Route path="/folders" element={<Folders />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </AppShell>
         </HashRouter>

@@ -1,3 +1,5 @@
+import { Package } from "../../../types";
+
 class AppSettings {
   static latestVersion = "0.1";
   version = "0.1";
@@ -10,7 +12,7 @@ class AppSettings {
   scannedFolders: string[] = [];
   folders: string[] = [];
   projects: string[] = [];
-  allPackages: { [key: string]: string[] } = {};
+  allPackages: Package = {};
   // TODO: MAKE A TYPE
 
   constructor() {

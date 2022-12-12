@@ -18,6 +18,14 @@ const Menubar = () => {
         to="/all_packages"
         active={location.pathname === "/all_packages"}
       />
+      <NavLink
+        label="All Projects"
+        component={Link}
+        to="/all_projects"
+        active={location.pathname === "/all_projects"}
+      />
+      <NavLink label="Folders" component={Link} to="/folders" active={location.pathname === "/folders"} />
+      <NavLink label="Settings" component={Link} to="/settings" active={location.pathname === "/settings"} />
     </Navbar>
   );
 };
