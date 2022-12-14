@@ -33,7 +33,7 @@ const AllPackages = () => {
     if (sortBy === "most_used")
       allKeys.sort((a, b) => store.allPackages[b].usedIn.length - store.allPackages[a].usedIn.length);
 
-    const obj: any = {};
+    const obj: typeof store.allPackages = {};
     allKeys.forEach((key) => {
       obj[key] = store.allPackages[key];
     });

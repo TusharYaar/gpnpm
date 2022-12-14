@@ -3,8 +3,17 @@ import { readdir, lstat } from "node:fs/promises";
 import { join as pathJoin } from "path";
 import fs from "fs";
 import { EXCLUDED_FOLDERS } from "../../constants";
-import { addNewFoldersToStorage, addNewPackages, addNewProjectToStorage, addScannedFoldersToStorage } from "../storage";
+import {
+  addNewFoldersToStorage,
+  addNewPackages,
+  addNewProjectToStorage,
+  addPackageDetails,
+  addScannedFoldersToStorage,
+  getAppSettings,
+} from "../storage";
 import { sendUpdateState } from "../../index";
+import axios from "axios";
+import { NPMRegistryPackageResponse, Package } from "../../../types";
 
 export const attachListeners = () => {
   ipcMain.handle("PROJECT:open-folder-dialog", handleOpenFolderDialog);
@@ -74,4 +83,51 @@ const getPackageJSON = (path: string) => {
     const _file = JSON.parse(buffer.toString());
     return _file;
   } else return null;
+};
+
+export const checkForPackageDetails = async (updateAll = false) => {
+  const { allPackages } = getAppSettings();
+  let index = 0;
+  for (const pack in allPackages) {
+    ++index;
+    if (allPackages[pack].npm && !updateAll) continue;
+    sendUpdateState(`fetching_package_details`, {
+      total: Object.keys(allPackages).length,
+      current: index,
+      package: pack,
+    });
+    const details = await fetchPackageDetails(pack);
+    addPackageDetails(pack, details);
+  }
+  sendUpdateState("idle");
+};
+
+// TODO: Move the function to utils
+const sortVersion = (a: string, b: string) => {
+  const aver = a.split(".");
+  const bver = b.split(".");
+
+  for (let i = 0; i < 3; i++) {
+    if (+aver[i] - +bver[i] !== 0) return +aver[i] - +bver[i];
+  }
+  return 0;
+};
+
+export const fetchPackageDetails = async (pack: string) => {
+  const { data } = await axios.get<NPMRegistryPackageResponse>(`https://registry.npmjs.org/${pack}`);
+  const myPack: Package["npm"] = {
+    name: pack,
+    "dist-tags": data["dist-tags"],
+    description: data.description,
+    _id: data._id,
+    _rev: data._rev,
+    license: data?.license,
+    versions: Object.keys(data.versions)
+      .filter((key) => key.match(/^[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}$/))
+      .sort(sortVersion),
+    keywords: data?.keywords,
+    homepage: data?.homepage,
+  };
+
+  return myPack;
 };

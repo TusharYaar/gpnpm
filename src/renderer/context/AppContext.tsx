@@ -1,7 +1,7 @@
 import { IpcRendererEvent } from "electron";
 import React, { useContext, createContext, useCallback, useState, useEffect } from "react";
 import AppSettings from "../../main/modules/storage/AppSettings";
-import { SystemInfo } from "../../types";
+import { SystemCurrentStateType, SystemInfo } from "../../types";
 import AddProjectModal from "../components/AddProjectModal";
 import ErrorModal from "../components/ErrorModal";
 
@@ -9,7 +9,7 @@ type ContextProps = {
   openFileAddDialog: () => void;
   systemInfo: SystemInfo | null;
   // TODO: ADD A TYPE
-  systemCurrentState: unknown;
+  systemCurrentState: SystemCurrentStateType;
   store: AppSettings | null;
   addFolders: (projects: string[]) => void;
 };
@@ -33,7 +33,10 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
   const [projectOptions, setProjectOptions] = useState([]);
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [error, setError] = useState<{ error: string; id: string }[]>([]);
-  const [systemCurrentState, setSystemCurrentState] = useState("idle");
+  const [systemCurrentState, setSystemCurrentState] = useState<SystemCurrentStateType>({
+    state: "idle",
+    data: null,
+  });
   const [store, setStore] = useState(null);
 
   const dismissError = useCallback((id: string) => {
@@ -85,7 +88,9 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
   }, [getSystemInfo]);
 
   useEffect(() => {
-    window.systemAPI.onUpdateCurrentState((_event: IpcRendererEvent, value: string) => setSystemCurrentState(value));
+    window.systemAPI.onUpdateCurrentState((_event: IpcRendererEvent, value: SystemCurrentStateType) => {
+      setSystemCurrentState(value);
+    });
     window.systemAPI.onError((_event: IpcRendererEvent, value: string) => throwError(value));
     window.systemAPI.onUpdateStore((_event: IpcRendererEvent, value: AppSettings) => setStore(value));
   }, []);

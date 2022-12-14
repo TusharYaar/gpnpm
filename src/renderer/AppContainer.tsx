@@ -19,7 +19,7 @@ const AppContainer = () => {
           <AppShell
             navbar={<Menubar />}
             header={
-              <Header height={20}>
+              <Header height={50}>
                 <CurrentOperation />
               </Header>
             }

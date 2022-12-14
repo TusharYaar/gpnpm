@@ -1,5 +1,9 @@
 import { Package } from "../../../types";
 
+type AllPackages = {
+  [key: string]: Package;
+};
+
 class AppSettings {
   static latestVersion = "0.1";
   version = "0.1";
@@ -12,7 +16,7 @@ class AppSettings {
   scannedFolders: string[] = [];
   folders: string[] = [];
   projects: string[] = [];
-  allPackages: Package = {};
+  allPackages: AllPackages = {};
   // TODO: MAKE A TYPE
 
   constructor() {

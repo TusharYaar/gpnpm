@@ -4,6 +4,7 @@ import AppSettings from "./AppSettings";
 import { APP_SETTINGS_FILE_PATH } from "../../constants";
 import { updateStore } from "../../index";
 import { ipcMain } from "electron";
+import { Package } from "../../../types";
 
 let APP_SETTINGS = new AppSettings();
 
@@ -45,12 +46,14 @@ export const addNewFoldersToStorage = (folders: string[]) => {
 };
 
 export const addNewPackages = (packages: { [key: string]: string }, file: string) => {
-  for (const _package in packages) {
-    if (APP_SETTINGS.allPackages[_package]) {
-      if (!APP_SETTINGS.allPackages[_package].usedIn.includes(file))
-        APP_SETTINGS.allPackages[_package].usedIn.push(file);
-    } else APP_SETTINGS.allPackages[_package] = { usedIn: [file] };
+  // console.log(Object.values(packages));
+  for (const [key, value] of Object.entries(packages)) {
+    if (APP_SETTINGS.allPackages[key]) {
+      if (APP_SETTINGS.allPackages[key].usedIn.findIndex((f) => f.file === file) === -1)
+        APP_SETTINGS.allPackages[key].usedIn.push({ file, version: value });
+    } else APP_SETTINGS.allPackages[key] = { usedIn: [{ file, version: value }], npm: null };
   }
+
   updateAppSettings();
 };
 
@@ -65,6 +68,16 @@ export const addNewProjectToStorage = (projects: string[]) => {
   else APP_SETTINGS.projects = projects;
 
   updateAppSettings();
+};
+
+export const addPackageDetails = (pack: string, details: any) => {
+  if (APP_SETTINGS.allPackages[pack]) APP_SETTINGS.allPackages[pack].npm = details;
+  else
+    APP_SETTINGS.allPackages[pack] = {
+      usedIn: [],
+      npm: details,
+    };
+  updateStore(APP_SETTINGS);
 };
 
 getAppSettings(true);

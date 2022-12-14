@@ -1,5 +1,6 @@
 import { Menu, app } from "electron";
-import { sendInstruction, sendUpdateState, throwError } from ".";
+import { sendInstruction, throwError } from ".";
+import { checkForPackageDetails } from "./modules/project";
 
 const relaunchApp = () => {
   app.relaunch();
@@ -33,11 +34,6 @@ const template: Electron.MenuItemConstructorOptions[] = [
             },
             {
               role: "toggleDevTools" as const,
-            },
-            {
-              id: "sendState",
-              label: "Send State",
-              click: () => sendUpdateState("Loading"),
             },
             {
               id: "throwError",
@@ -78,6 +74,11 @@ const template: Electron.MenuItemConstructorOptions[] = [
         click: () => {
           ("");
         },
+      },
+      {
+        id: "check_package_updates",
+        label: "Check Package Updates",
+        click: () => checkForPackageDetails(true),
       },
     ],
   },
