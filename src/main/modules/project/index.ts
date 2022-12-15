@@ -2,18 +2,20 @@ import { ipcMain, dialog, IpcMainInvokeEvent } from "electron";
 import { readdir, lstat } from "node:fs/promises";
 import { join as pathJoin } from "path";
 import fs from "fs";
-import { EXCLUDED_FOLDERS } from "../../constants";
+import { EXCLUDED_FOLDERS } from "../../utils/constants";
 import {
   addNewFoldersToStorage,
   addNewPackages,
   addNewProjectToStorage,
-  addPackageDetails,
+  addPackageNPMDetails,
   addScannedFoldersToStorage,
   getAppSettings,
+  updatePackageUsedInDetails,
 } from "../storage";
 import { sendUpdateState } from "../../index";
 import axios from "axios";
 import { NPMRegistryPackageResponse, Package } from "../../../types";
+import { getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../../utils/functions";
 
 export const attachListeners = () => {
   ipcMain.handle("PROJECT:open-folder-dialog", handleOpenFolderDialog);
@@ -62,15 +64,17 @@ export const searchForFile = async (file: string, path: string) => {
 
 const handleAddFolders = (_event: IpcMainInvokeEvent, folders: string[]) => {
   sendUpdateState("getting_dependencies");
+  console.log(folders);
   addNewFoldersToStorage(folders);
   const projects = [];
   for (const index in folders) {
     const file = getPackageJSON(pathJoin(folders[index], "package.json"));
-    if (file !== null) {
+    if (file !== null && file.dependencies) {
       addNewPackages(file.dependencies, pathJoin(folders[index], "package.json"));
       projects.push(pathJoin(folders[index], "package.json"));
     }
   }
+  console.log(projects);
   addNewProjectToStorage(projects);
   sendUpdateState("idle");
   return true;
@@ -87,33 +91,26 @@ const getPackageJSON = (path: string) => {
 
 export const checkForPackageDetails = async (updateAll = false) => {
   const { allPackages } = getAppSettings();
+  const total = Object.keys(allPackages).length;
   let index = 0;
   for (const pack in allPackages) {
     ++index;
-    if (allPackages[pack].npm && !updateAll) continue;
-    sendUpdateState(`fetching_package_details`, {
-      total: Object.keys(allPackages).length,
-      current: index,
-      package: pack,
-    });
-    const details = await fetchPackageDetails(pack);
-    addPackageDetails(pack, details);
+    let details: Package["npm"];
+    if (!allPackages[pack].npm || updateAll) {
+      sendUpdateState(`fetching_package_details`, {
+        total,
+        current: index,
+        package: pack,
+      });
+      details = await fetchPackageDetailsFromRegistry(pack);
+      addPackageNPMDetails(pack, details, index === total);
+    }
   }
   sendUpdateState("idle");
+  checkAvaliblePackageUpdateInProjects();
 };
 
-// TODO: Move the function to utils
-const sortVersion = (a: string, b: string) => {
-  const aver = a.split(".");
-  const bver = b.split(".");
-
-  for (let i = 0; i < 3; i++) {
-    if (+aver[i] - +bver[i] !== 0) return +aver[i] - +bver[i];
-  }
-  return 0;
-};
-
-export const fetchPackageDetails = async (pack: string) => {
+export const fetchPackageDetailsFromRegistry = async (pack: string) => {
   const { data } = await axios.get<NPMRegistryPackageResponse>(`https://registry.npmjs.org/${pack}`);
   const myPack: Package["npm"] = {
     name: pack,
@@ -128,6 +125,31 @@ export const fetchPackageDetails = async (pack: string) => {
     keywords: data?.keywords,
     homepage: data?.homepage,
   };
-
   return myPack;
+};
+
+export const fetchLatestPackageVersionFromRegistry = async (pack: string) => {
+  const data = await axios.get(`https://registry.npmjs.org/${pack}/latest`);
+  console.log(data);
+};
+
+export const checkAvaliblePackageUpdateInProjects = async () => {
+  const { allPackages } = getAppSettings();
+  const total = Object.keys(allPackages).length;
+  let index = 0;
+  for (const pack in allPackages) {
+    ++index;
+
+    const usedIn = allPackages[pack].usedIn.map((project) => ({
+      ...project,
+      updates: getPackageLatestReleases(sanitizeVersion(project.version), allPackages[pack].npm.versions),
+    }));
+    sendUpdateState(`fetching_package_details`, {
+      total,
+      current: index,
+      package: pack,
+    });
+    updatePackageUsedInDetails(pack, usedIn, index === total);
+  }
+  sendUpdateState("idle");
 };

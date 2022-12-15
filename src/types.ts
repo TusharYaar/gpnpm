@@ -8,6 +8,11 @@ export type Package = {
   usedIn: {
     file: string;
     version: string;
+    updates?: {
+      major: string | boolean;
+      minor: string | boolean;
+      patch: string | boolean;
+    };
   }[];
   npm?: {
     _id: string;

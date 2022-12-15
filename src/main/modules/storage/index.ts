@@ -1,8 +1,8 @@
 import fs from "fs";
 import AppSettings from "./AppSettings";
 
-import { APP_SETTINGS_FILE_PATH } from "../../constants";
-import { updateStore } from "../../index";
+import { APP_SETTINGS_FILE_PATH } from "../../utils/constants";
+import { throwError, updateStore } from "../../index";
 import { ipcMain } from "electron";
 import { Package } from "../../../types";
 
@@ -46,14 +46,16 @@ export const addNewFoldersToStorage = (folders: string[]) => {
 };
 
 export const addNewPackages = (packages: { [key: string]: string }, file: string) => {
-  // console.log(Object.values(packages));
-  for (const [key, value] of Object.entries(packages)) {
-    if (APP_SETTINGS.allPackages[key]) {
-      if (APP_SETTINGS.allPackages[key].usedIn.findIndex((f) => f.file === file) === -1)
-        APP_SETTINGS.allPackages[key].usedIn.push({ file, version: value });
-    } else APP_SETTINGS.allPackages[key] = { usedIn: [{ file, version: value }], npm: null };
+  try {
+    for (const [key, value] of Object.entries(packages)) {
+      if (APP_SETTINGS.allPackages[key]) {
+        if (APP_SETTINGS.allPackages[key].usedIn.findIndex((f) => f.file === file) === -1)
+          APP_SETTINGS.allPackages[key].usedIn.push({ file, version: value });
+      } else APP_SETTINGS.allPackages[key] = { usedIn: [{ file, version: value }], npm: null };
+    }
+  } catch (e) {
+    throwError(e);
   }
-
   updateAppSettings();
 };
 
@@ -70,14 +72,29 @@ export const addNewProjectToStorage = (projects: string[]) => {
   updateAppSettings();
 };
 
-export const addPackageDetails = (pack: string, details: any) => {
+export const addPackageNPMDetails = (pack: string, details: Package["npm"], shouldUpdateStore = false) => {
   if (APP_SETTINGS.allPackages[pack]) APP_SETTINGS.allPackages[pack].npm = details;
   else
     APP_SETTINGS.allPackages[pack] = {
       usedIn: [],
       npm: details,
     };
-  updateStore(APP_SETTINGS);
+  if (shouldUpdateStore) updateAppSettings();
+};
+
+export const updatePackageUsedInDetails = (pack: string, details: Package["usedIn"], shouldUpdateStore = false) => {
+  if (APP_SETTINGS.allPackages[pack]) APP_SETTINGS.allPackages[pack].usedIn = details;
+  else
+    APP_SETTINGS.allPackages[pack] = {
+      usedIn: details,
+      npm: null,
+    };
+  if (shouldUpdateStore) updateAppSettings();
+};
+
+export const updatePackageDetails = (pack: string, details: Package, shouldUpdateStore = false) => {
+  APP_SETTINGS.allPackages[pack] = details;
+  if (shouldUpdateStore) updateAppSettings();
 };
 
 getAppSettings(true);
