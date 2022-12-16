@@ -1,4 +1,4 @@
-import { Button, Container, Flex, Menu, TextInput, Title } from "@mantine/core";
+import { Button, Container, Flex, Menu, Pagination, TextInput, Title } from "@mantine/core";
 import React, { useMemo, useState, useDeferredValue } from "react";
 import PackageItem from "../components/PackageItem";
 import { useApp } from "../context/AppContext";
@@ -23,6 +23,7 @@ const AllPackages = () => {
   const { store } = useApp();
   const [sortBy, setSortBy] = useState<keyof typeof sortOptions>("name_ascending");
   const deferredSearch = useDeferredValue(search);
+  const [page, setPage] = useState(1);
 
   const packages = useMemo(() => {
     if (!store) return {};
@@ -58,27 +59,38 @@ const AllPackages = () => {
           placeholder="e.g. react"
           label="Search Package"
         />
-        <Menu shadow="md" width={200}>
-          <Menu.Target>
-            <Button variant="subtle" compact={true}>
-              {`Sort: ${sortOptions[sortBy].label}`}
-            </Button>
-          </Menu.Target>
+        <Flex direction="column" align="flex-end">
+          <Menu shadow="md" width={200}>
+            <Menu.Target>
+              <Button variant="subtle" compact={true}>
+                {`Sort: ${sortOptions[sortBy].label}`}
+              </Button>
+            </Menu.Target>
 
-          <Menu.Dropdown>
-            <Menu.Label>Application</Menu.Label>
-            {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
-              <Menu.Item onClick={() => setSortBy(option)} key={option}>
-                {sortOptions[option].label}
-              </Menu.Item>
-            ))}
-            <Menu.Divider />
-          </Menu.Dropdown>
-        </Menu>
+            <Menu.Dropdown>
+              <Menu.Label>Application</Menu.Label>
+              {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
+                <Menu.Item onClick={() => setSortBy(option)} key={option}>
+                  {sortOptions[option].label}
+                </Menu.Item>
+              ))}
+              <Menu.Divider />
+            </Menu.Dropdown>
+          </Menu>
+          <Pagination
+            size="xs"
+            my="sm"
+            page={page + 1}
+            onChange={(p) => setPage(p - 1)}
+            total={store ? Math.ceil(Object.keys(packages).length / 20) : 1}
+          />
+        </Flex>
       </Flex>
-      {Object.keys(packages).map((pack) => (
-        <PackageItem key={pack} name={pack} details={store.allPackages[pack]} />
-      ))}
+      {Object.keys(packages)
+        .slice(page * 20, page * 20 + 20)
+        .map((pack) => (
+          <PackageItem key={pack} name={pack} details={store.allPackages[pack]} />
+        ))}
     </Container>
   );
 };

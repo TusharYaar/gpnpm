@@ -1,6 +1,7 @@
-import { Accordion, Badge, Code, Flex, Paper, Tabs, Text } from "@mantine/core";
+import { Accordion, Badge, Box, Code, Flex, Paper, Tabs, Text } from "@mantine/core";
 import React, { useId, useMemo } from "react";
 import { Package } from "../../types";
+import PackageIcon from "./PackageIcon";
 
 type Props = {
   name: string;
@@ -28,15 +29,20 @@ const PackageItem = ({ name, details }: Props) => {
         <Accordion.Item value="brief">
           <Accordion.Control>
             <Flex justify="space-between">
-              <Text>{name}</Text>
+              <Flex align="center">
+                <PackageIcon pack={name} />
+                <Box ml="sm">
+                  <Text>{name}</Text>
+                  <Flex gap="sm">
+                    {availibleUpdates?.major > 0 && (
+                      <Badge color="green">{availibleUpdates.major} Major update avalible</Badge>
+                    )}
+                    {availibleUpdates?.minor > 0 && <Badge color="yellow">{availibleUpdates.minor} Minor</Badge>}
+                    {availibleUpdates?.patch > 0 && <Badge color="red">{availibleUpdates.patch} Patch</Badge>}
+                  </Flex>
+                </Box>
+              </Flex>
               <Badge>{details?.usedIn.length} projects</Badge>
-            </Flex>
-            <Flex gap="sm">
-              {availibleUpdates?.major > 0 && (
-                <Badge color="green">{availibleUpdates.major} Major update avalible</Badge>
-              )}
-              {availibleUpdates?.minor > 0 && <Badge color="yellow">{availibleUpdates.minor} Minor</Badge>}
-              {availibleUpdates?.patch > 0 && <Badge color="red">{availibleUpdates.patch} Patch</Badge>}
             </Flex>
           </Accordion.Control>
           <Accordion.Panel>
@@ -53,6 +59,7 @@ const PackageItem = ({ name, details }: Props) => {
                   Projects
                 </Tabs.Tab>
                 <Tabs.Tab value="versions"> Versions </Tabs.Tab>
+                <Tabs.Tab value="raw"> Raw </Tabs.Tab>
               </Tabs.List>
               <Tabs.Panel value="projects">
                 {details.usedIn.map((project) => (
@@ -61,7 +68,7 @@ const PackageItem = ({ name, details }: Props) => {
                   </div>
                 ))}
               </Tabs.Panel>
-              <Tabs.Panel value="versions">
+              <Tabs.Panel value="raw">
                 <Code>{JSON.stringify(details, null, 4)}</Code>
               </Tabs.Panel>
             </Tabs>
