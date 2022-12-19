@@ -33,9 +33,13 @@ const AllPackages = () => {
     if (sortBy === "name_ascending") allKeys.sort((a, b) => a.localeCompare(b));
     if (sortBy === "name_decending") allKeys.sort((a, b) => b.localeCompare(a));
     if (sortBy === "least_used")
-      allKeys.sort((a, b) => store.allPackages[a].usedIn.length - store.allPackages[b].usedIn.length);
+      allKeys.sort(
+        (a, b) => Object.keys(store.allPackages[a].usedIn).length - Object.keys(store.allPackages[b].usedIn).length
+      );
     if (sortBy === "most_used")
-      allKeys.sort((a, b) => store.allPackages[b].usedIn.length - store.allPackages[a].usedIn.length);
+      allKeys.sort(
+        (a, b) => Object.keys(store.allPackages[b].usedIn).length - Object.keys(store.allPackages[a].usedIn).length
+      );
     const obj: typeof store.allPackages = {};
     allKeys.forEach((key) => {
       obj[key] = store.allPackages[key];

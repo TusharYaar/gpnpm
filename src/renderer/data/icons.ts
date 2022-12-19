@@ -25,12 +25,18 @@ import {
   SiVuedotjs,
   SiTailwindcss,
   SiBabel,
+  SiEslint,
+  SiChartdotjs,
+  SiStylelint,
 } from "react-icons/si";
 
 const ICONS_DATA: {
   [key: string]: IconType;
 } = {
   react: SiReact,
+  "react-dom": SiReact,
+  eslint: SiEslint,
+  stylelint: SiStylelint,
   "@chakra-ui/vue": SiChakraui,
   "@chakra-ui/react": SiChakraui,
   chai: SiChai,
@@ -52,6 +58,7 @@ const ICONS_DATA: {
   "framer-motion": SiFramer,
   passport: SiPassport,
   realm: SiRealm,
+  "@realm/react": SiRealm,
   express: SiExpress,
   redis: SiRedis,
   vue: SiVuedotjs,
@@ -59,6 +66,8 @@ const ICONS_DATA: {
   tailwindcss: SiTailwindcss,
   "@babel/core": SiBabel,
   "@babel/runtime": SiBabel,
+  "chart.js": SiChartdotjs,
+  "react-chartjs-2": SiChartdotjs,
 };
 
 export default ICONS_DATA;

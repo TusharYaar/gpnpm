@@ -49,9 +49,23 @@ export const addNewPackages = (packages: { [key: string]: string }, file: string
   try {
     for (const [key, value] of Object.entries(packages)) {
       if (APP_SETTINGS.allPackages[key]) {
-        if (APP_SETTINGS.allPackages[key].usedIn.findIndex((f) => f.file === file) === -1)
-          APP_SETTINGS.allPackages[key].usedIn.push({ file, version: value });
-      } else APP_SETTINGS.allPackages[key] = { usedIn: [{ file, version: value }], npm: null, latest: null };
+        if (APP_SETTINGS.allPackages[key].usedIn[file]) {
+          APP_SETTINGS.allPackages[key].usedIn[file] = {
+            ...APP_SETTINGS.allPackages[key].usedIn[file],
+            version: value,
+          };
+        } else {
+          APP_SETTINGS.allPackages[key].usedIn[file] = {
+            version: value,
+            updates: null,
+          };
+        }
+      } else
+        APP_SETTINGS.allPackages[key] = {
+          usedIn: { [file]: { version: value, updates: null } },
+          npm: null,
+          latest: null,
+        };
     }
   } catch (e) {
     throwError(e);
@@ -107,7 +121,7 @@ export const addPackageNPMDetails = (pack: string, details: Package["npm"]) => {
     };
   } else
     APP_SETTINGS.allPackages[pack] = {
-      usedIn: [],
+      usedIn: {},
       npm: details,
       latest: details.versions[details.versions.length - 1],
     };

@@ -1,6 +1,6 @@
 import { Menu, app } from "electron";
 import { sendInstruction, throwError } from ".";
-import { checkForPackageDetails } from "./modules/project";
+import { checkAvaliblePackageUpdateInProjects, checkForPackageDetails } from "./modules/project";
 
 const relaunchApp = () => {
   app.relaunch();
@@ -79,6 +79,11 @@ const template: Electron.MenuItemConstructorOptions[] = [
         id: "check_package_updates",
         label: "Check Package Updates",
         click: () => checkForPackageDetails(true),
+      },
+      {
+        id: "check_for_updates",
+        label: "Check for dependencies Update in Project",
+        click: () => checkAvaliblePackageUpdateInProjects(),
       },
     ],
   },

@@ -149,21 +149,20 @@ export const fetchPackageDetailsFromRegistry = async (pack: string) => {
   return myPack;
 };
 
-// export const fetchLatestPackageVersionFromRegistry = async (pack: string) => {
-//   const data = await axios.get(`https://registry.npmjs.org/${pack}/latest`);
-// };
-
 export const checkAvaliblePackageUpdateInProjects = async () => {
   const { allPackages } = getAppSettings();
   const total = Object.keys(allPackages).length;
   let index = 0;
   for (const pack in allPackages) {
     ++index;
+    const usedIn: typeof allPackages[0]["usedIn"] = {};
 
-    const usedIn = allPackages[pack].usedIn.map((project) => ({
-      ...project,
-      updates: getPackageLatestReleases(sanitizeVersion(project.version), allPackages[pack].npm.versions),
-    }));
+    for (const [key, value] of Object.entries(allPackages[pack].usedIn)) {
+      usedIn[key] = {
+        ...value,
+        updates: getPackageLatestReleases(sanitizeVersion(value.version), allPackages[pack].npm.versions),
+      };
+    }
     sendUpdateState(`fetching_package_details`, {
       total,
       current: index,

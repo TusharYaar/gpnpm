@@ -21,14 +21,15 @@ export type Package = {
   icon?: string;
   latest?: string;
   usedIn: {
-    file: string;
-    version: string;
-    updates?: {
-      major: string | boolean;
-      minor: string | boolean;
-      patch: string | boolean;
+    [key: string]: {
+      version: string;
+      updates?: {
+        major: string | boolean;
+        minor: string | boolean;
+        patch: string | boolean;
+      };
     };
-  }[];
+  };
   npm?: {
     _id: string;
     _rev: string;

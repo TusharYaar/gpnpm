@@ -1,9 +1,10 @@
-import React, { useId, useMemo } from "react";
-import { Accordion, Box, Code, Flex, Paper, Tabs, Text } from "@mantine/core";
+import React, { useCallback, useId, useMemo, useState } from "react";
+import { Accordion, Badge, Box, Code, Flex, Paper, Tabs, Text } from "@mantine/core";
 
 import { Project } from "../../types";
 import PackageIcon from "./PackageIcon";
 import { sanitizeVersion } from "../../utils/functions";
+import { useApp } from "../context/AppContext";
 
 type Props = {
   name: string;
@@ -11,7 +12,11 @@ type Props = {
 };
 
 const ProjectItem = ({ name, details }: Props) => {
+  const {
+    store: { allPackages },
+  } = useApp();
   const pid = useId();
+  const [selected, setSelected] = useState([]);
 
   const dependenciesKeys = useMemo(() => {
     return Object.keys(details.dependencies);
@@ -20,6 +25,13 @@ const ProjectItem = ({ name, details }: Props) => {
   const devDependenciesKeys = useMemo(() => {
     return Object.keys(details.devDependencies);
   }, [details]);
+
+  const toggleSelected = useCallback((id: string) => {
+    setSelected((prev) => {
+      if (prev.includes(id)) return prev.filter((p) => p !== id);
+      else return [...prev, id];
+    });
+  }, []);
 
   return (
     <Paper>
@@ -48,10 +60,26 @@ const ProjectItem = ({ name, details }: Props) => {
               <Tabs.Panel value="dependencies">
                 {dependenciesKeys.map((dep) => (
                   <Flex key={`${pid}-d-${dep}`} my="sm" align="center">
-                    <PackageIcon compact={true} pack={dep} />
+                    <PackageIcon
+                      compact={true}
+                      pack={dep}
+                      onClick={() => toggleSelected(dep)}
+                      isSelected={selected.includes(dep)}
+                    />
                     <Text mx="sm" fz="xs">
                       {dep}: {sanitizeVersion(details.dependencies[dep])}
                     </Text>
+                    <Flex align="center">
+                      {allPackages[dep]?.usedIn[name]?.updates?.major && (
+                        <Badge color="green">Major Update {allPackages[dep].usedIn[name].updates.major}</Badge>
+                      )}
+                      {allPackages[dep]?.usedIn[name]?.updates?.minor && (
+                        <Badge color="yellow">minor Update {allPackages[dep].usedIn[name].updates.minor}</Badge>
+                      )}
+                      {allPackages[dep]?.usedIn[name]?.updates?.patch && (
+                        <Badge color="red">patch Update {allPackages[dep].usedIn[name].updates.patch}</Badge>
+                      )}
+                    </Flex>
                   </Flex>
                 ))}
               </Tabs.Panel>

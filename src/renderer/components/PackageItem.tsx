@@ -13,11 +13,12 @@ const PackageItem = ({ name, details }: Props) => {
 
   const availibleUpdates = useMemo(() => {
     const updates = { major: 0, minor: 0, patch: 0 };
-    details.usedIn.forEach((project) => {
-      if (!project || !project.updates) return updates;
-      if (project.updates.major) updates.major++;
-      if (project.updates.minor) updates.minor++;
-      if (project.updates.patch) updates.patch++;
+    Object.values(details.usedIn).forEach((value) => {
+      if (value.updates) {
+        if (value.updates.major) updates.major++;
+        if (value.updates.minor) updates.minor++;
+        if (value.updates.patch) updates.patch++;
+      }
     });
 
     return updates;
@@ -34,15 +35,15 @@ const PackageItem = ({ name, details }: Props) => {
                 <Box ml="sm">
                   <Text>{name}</Text>
                   <Flex gap="sm">
-                    {availibleUpdates?.major > 0 && (
+                    {availibleUpdates.major > 0 && (
                       <Badge color="green">{availibleUpdates.major} Major update avalible</Badge>
                     )}
-                    {availibleUpdates?.minor > 0 && <Badge color="yellow">{availibleUpdates.minor} Minor</Badge>}
-                    {availibleUpdates?.patch > 0 && <Badge color="red">{availibleUpdates.patch} Patch</Badge>}
+                    {availibleUpdates.minor > 0 && <Badge color="yellow">{availibleUpdates.minor} Minor</Badge>}
+                    {availibleUpdates.patch > 0 && <Badge color="red">{availibleUpdates.patch} Patch</Badge>}
                   </Flex>
                 </Box>
               </Flex>
-              <Badge>{details?.usedIn.length} projects</Badge>
+              <Badge>{Object.keys(details.usedIn).length} projects</Badge>
             </Flex>
           </Accordion.Control>
           <Accordion.Panel>
@@ -55,17 +56,13 @@ const PackageItem = ({ name, details }: Props) => {
             </Flex>
             <Tabs defaultValue="projects">
               <Tabs.List>
-                <Tabs.Tab value="projects" rightSection={<Badge>{details.usedIn.length}</Badge>}>
-                  Projects
-                </Tabs.Tab>
+                <Tabs.Tab value="projects">Projects</Tabs.Tab>
                 <Tabs.Tab value="versions"> Versions </Tabs.Tab>
                 <Tabs.Tab value="raw"> Raw </Tabs.Tab>
               </Tabs.List>
               <Tabs.Panel value="projects">
-                {details.usedIn.map((project) => (
-                  <div key={project.file}>
-                    {project.file} -- {project.version}
-                  </div>
+                {Object.keys(details.usedIn).map((project) => (
+                  <div key={project}>{project} --</div>
                 ))}
               </Tabs.Panel>
               <Tabs.Panel value="raw">
