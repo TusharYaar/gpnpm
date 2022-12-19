@@ -51,7 +51,7 @@ export const addNewPackages = (packages: { [key: string]: string }, file: string
       if (APP_SETTINGS.allPackages[key]) {
         if (APP_SETTINGS.allPackages[key].usedIn.findIndex((f) => f.file === file) === -1)
           APP_SETTINGS.allPackages[key].usedIn.push({ file, version: value });
-      } else APP_SETTINGS.allPackages[key] = { usedIn: [{ file, version: value }], npm: null };
+      } else APP_SETTINGS.allPackages[key] = { usedIn: [{ file, version: value }], npm: null, latest: null };
     }
   } catch (e) {
     throwError(e);
@@ -60,32 +60,68 @@ export const addNewPackages = (packages: { [key: string]: string }, file: string
 };
 
 export const addScannedFoldersToStorage = (folders: string[]) => {
-  if (APP_SETTINGS.scannedFolders) APP_SETTINGS.scannedFolders.push(...folders);
-  else APP_SETTINGS.scannedFolders = folders;
+  const unique = new Set(folders);
+
+  if (APP_SETTINGS.scannedFolders)
+    for (const folder in APP_SETTINGS.scannedFolders) unique.add(APP_SETTINGS.scannedFolders[folder]);
+  APP_SETTINGS.scannedFolders = Array.from(unique);
   updateAppSettings();
 };
 
-export const addNewProjectToStorage = (projects: string[]) => {
-  if (APP_SETTINGS.projects) APP_SETTINGS.projects.push(...projects);
-  else APP_SETTINGS.projects = projects;
-
-  updateAppSettings();
+export const addNewProjectToStorage = (
+  project: string,
+  dependencies: {
+    [key: string]: string;
+  },
+  devDependencies: {
+    [key: string]: string;
+  },
+  scripts: {
+    [key: string]: string;
+  },
+  markdownLocation: null | string
+) => {
+  if (APP_SETTINGS.projects[project]) {
+    APP_SETTINGS.projects[project] = {
+      ...APP_SETTINGS.projects[project],
+      dependencies,
+      devDependencies,
+      markdownLocation,
+    };
+  } else {
+    APP_SETTINGS.projects[project] = {
+      scripts: scripts,
+      dependencies,
+      devDependencies,
+      markdownLocation,
+    };
+  }
 };
 
-export const addPackageNPMDetails = (pack: string, details: Package["npm"], shouldUpdateStore = false) => {
-  if (APP_SETTINGS.allPackages[pack]) APP_SETTINGS.allPackages[pack].npm = details;
-  else
+export const addPackageNPMDetails = (pack: string, details: Package["npm"]) => {
+  if (APP_SETTINGS.allPackages[pack]) {
+    APP_SETTINGS.allPackages[pack] = {
+      ...APP_SETTINGS.allPackages[pack],
+      npm: details,
+      latest: details.versions[details.versions.length - 1],
+    };
+  } else
     APP_SETTINGS.allPackages[pack] = {
       usedIn: [],
       npm: details,
+      latest: details.versions[details.versions.length - 1],
     };
-  if (shouldUpdateStore) updateAppSettings();
 };
 
 export const updatePackageUsedInDetails = (pack: string, details: Package["usedIn"], shouldUpdateStore = false) => {
-  if (APP_SETTINGS.allPackages[pack]) APP_SETTINGS.allPackages[pack].usedIn = details;
+  if (APP_SETTINGS.allPackages[pack])
+    APP_SETTINGS.allPackages[pack] = {
+      ...APP_SETTINGS.allPackages[pack],
+      usedIn: details,
+    };
   else
     APP_SETTINGS.allPackages[pack] = {
+      latest: null,
       usedIn: details,
       npm: null,
     };

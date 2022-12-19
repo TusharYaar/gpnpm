@@ -10,9 +10,10 @@ import {
   addPackageNPMDetails,
   addScannedFoldersToStorage,
   getAppSettings,
+  updateAppSettings,
   updatePackageUsedInDetails,
 } from "../storage";
-import { sendUpdateState } from "../../index";
+import { sendUpdateState, throwError } from "../../index";
 import axios from "axios";
 import { NPMRegistryPackageResponse, Package } from "../../../types";
 import { getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../../utils/functions";
@@ -25,23 +26,26 @@ export const attachListeners = () => {
 
 const handleOpenFolderDialog = async () => {
   //
-  sendUpdateState("wait_for_choose_folders");
-  const result = await dialog.showOpenDialog({ properties: ["openDirectory", "multiSelections"] });
-  if (result.canceled || result.filePaths.length === 0) {
+  try {
+    sendUpdateState("wait_for_choose_folders");
+    const result = await dialog.showOpenDialog({ properties: ["openDirectory", "multiSelections"] });
+    if (result.canceled || result.filePaths.length === 0) {
+      sendUpdateState("idle");
+      return result;
+    }
+    addScannedFoldersToStorage(result.filePaths);
+    sendUpdateState("searching_for_projects");
+    const allPackages = [];
+    for (const _path in result.filePaths) {
+      const packages = await searchForFile("package.json", result.filePaths[_path]);
+      allPackages.push(...packages);
+      return { cancelled: false, filePaths: allPackages };
+    }
+  } catch (e) {
+    throwError(e);
+  } finally {
     sendUpdateState("idle");
-    return result;
   }
-
-  addScannedFoldersToStorage(result.filePaths);
-  sendUpdateState("searching_for_projects");
-
-  const allPackages = [];
-  for (const _path in result.filePaths) {
-    const packages = await searchForFile("package.json", result.filePaths[_path]);
-    allPackages.push(...packages);
-    return { cancelled: false, filePaths: allPackages };
-  }
-  sendUpdateState("idle");
 };
 
 export const searchForFile = async (file: string, path: string) => {
@@ -64,28 +68,44 @@ export const searchForFile = async (file: string, path: string) => {
 
 const handleAddFolders = (_event: IpcMainInvokeEvent, folders: string[]) => {
   sendUpdateState("getting_dependencies");
-  console.log(folders);
   addNewFoldersToStorage(folders);
-  const projects = [];
   for (const index in folders) {
-    const file = getPackageJSON(pathJoin(folders[index], "package.json"));
+    const project = pathJoin(folders[index], "package.json");
+    const file = getFile(project, "json");
+
+    let dependencies = {};
+    let devDependencies = {};
+    let scripts = {};
+    let markdown = null;
     if (file !== null && file.dependencies) {
-      addNewPackages(file.dependencies, pathJoin(folders[index], "package.json"));
-      projects.push(pathJoin(folders[index], "package.json"));
+      addNewPackages(file.dependencies, project);
+      dependencies = file.dependencies;
     }
+    if (file !== null && file.devDependencies) {
+      devDependencies = file.devDependencies;
+      addNewPackages(file.devDependencies, project);
+    }
+    if (file !== null && file.scripts) scripts = file.scripts;
+
+    if (file !== null) {
+      const markdownFile = pathJoin(folders[index], "README.md");
+      markdown = fs.existsSync(markdownFile) ? markdownFile : null;
+    }
+    addNewProjectToStorage(project, dependencies, devDependencies, scripts, markdown);
   }
-  console.log(projects);
-  addNewProjectToStorage(projects);
+
+  updateAppSettings();
   sendUpdateState("idle");
+  checkForPackageDetails();
   return true;
 };
 
-const getPackageJSON = (path: string) => {
+const getFile = (path: string, type?: string) => {
   const exists = fs.existsSync(path);
   if (exists) {
     const buffer = fs.readFileSync(path, "utf-8");
-    const _file = JSON.parse(buffer.toString());
-    return _file;
+    if (type === "json") return JSON.parse(buffer);
+    return buffer;
   } else return null;
 };
 
@@ -103,9 +123,10 @@ export const checkForPackageDetails = async (updateAll = false) => {
         package: pack,
       });
       details = await fetchPackageDetailsFromRegistry(pack);
-      addPackageNPMDetails(pack, details, index === total);
+      addPackageNPMDetails(pack, details);
     }
   }
+  updateAppSettings();
   sendUpdateState("idle");
   checkAvaliblePackageUpdateInProjects();
 };
@@ -128,10 +149,9 @@ export const fetchPackageDetailsFromRegistry = async (pack: string) => {
   return myPack;
 };
 
-export const fetchLatestPackageVersionFromRegistry = async (pack: string) => {
-  const data = await axios.get(`https://registry.npmjs.org/${pack}/latest`);
-  console.log(data);
-};
+// export const fetchLatestPackageVersionFromRegistry = async (pack: string) => {
+//   const data = await axios.get(`https://registry.npmjs.org/${pack}/latest`);
+// };
 
 export const checkAvaliblePackageUpdateInProjects = async () => {
   const { allPackages } = getAppSettings();

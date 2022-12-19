@@ -4,7 +4,22 @@ export interface SystemInfo {
 
 export type SystemUpdateStates = "starting" | "getting-packages" | "getting-package-details" | "";
 
+export type Project = {
+  scripts: {
+    [key: string]: string;
+  };
+  dependencies: {
+    [key: string]: string;
+  };
+  devDependencies: {
+    [key: string]: string;
+  };
+  markdownLocation: string | null;
+};
+
 export type Package = {
+  icon?: string;
+  latest?: string;
   usedIn: {
     file: string;
     version: string;

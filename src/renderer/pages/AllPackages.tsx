@@ -23,11 +23,10 @@ const AllPackages = () => {
   const { store } = useApp();
   const [sortBy, setSortBy] = useState<keyof typeof sortOptions>("name_ascending");
   const deferredSearch = useDeferredValue(search);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
 
   const packages = useMemo(() => {
     if (!store) return {};
-    console.log("rerender");
     const allKeys = Object.keys(store.allPackages).filter((p) =>
       deferredSearch ? p.toLowerCase().includes(deferredSearch.toLowerCase()) : true
     );
@@ -41,15 +40,16 @@ const AllPackages = () => {
     allKeys.forEach((key) => {
       obj[key] = store.allPackages[key];
     });
+    setPage(0);
     return obj;
   }, [store, sortBy, deferredSearch]);
 
   return (
     <Container>
       <Flex align="center" gap="sm">
-        <Title order={3}>{store?.allPackages && Object.keys(store.allPackages).length} </Title>
+        <Title order={3}>{Object.keys(store.allPackages).length} </Title>
         node packages across
-        <Title order={3}>{store?.projects && store.folders.length}</Title>
+        <Title order={3}>{Object.keys(store.projects).length}</Title>
         projects
       </Flex>
       <Flex justify="space-between" align="center">

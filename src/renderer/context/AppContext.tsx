@@ -5,12 +5,26 @@ import { SystemCurrentStateType, SystemInfo } from "../../types";
 import AddProjectModal from "../components/AddProjectModal";
 import ErrorModal from "../components/ErrorModal";
 
+const initialStore: AppSettings = {
+  projects: {},
+  folders: [],
+  version: "0.01",
+  created: new Date(),
+  modified: new Date(),
+  settings: {
+    theme: "light",
+    platform: "win32",
+  },
+  scannedFolders: [],
+  allPackages: {},
+};
+
 type ContextProps = {
   openFileAddDialog: () => void;
   systemInfo: SystemInfo | null;
   // TODO: ADD A TYPE
   systemCurrentState: SystemCurrentStateType;
-  store: AppSettings | null;
+  store: AppSettings;
   addFolders: (projects: string[]) => void;
 };
 
@@ -24,7 +38,7 @@ const AppContext = createContext<ContextProps>({
   },
   systemInfo: null,
   systemCurrentState: null,
-  store: null,
+  store: initialStore,
 });
 
 export const useApp = () => useContext(AppContext);
@@ -37,7 +51,7 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
     state: "idle",
     data: null,
   });
-  const [store, setStore] = useState(null);
+  const [store, setStore] = useState<AppSettings>(initialStore);
 
   const dismissError = useCallback((id: string) => {
     setError((prev) => prev.filter((err) => err.id !== id));
@@ -92,7 +106,10 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
       setSystemCurrentState(value);
     });
     window.systemAPI.onError((_event: IpcRendererEvent, value: string) => throwError(value));
-    window.systemAPI.onUpdateStore((_event: IpcRendererEvent, value: AppSettings) => setStore(value));
+    window.systemAPI.onUpdateStore((_event: IpcRendererEvent, value: AppSettings) => {
+      console.log("update Store");
+      setStore(value);
+    });
   }, []);
 
   useEffect(() => {

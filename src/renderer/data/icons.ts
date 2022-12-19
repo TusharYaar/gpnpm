@@ -24,6 +24,7 @@ import {
   SiVuetify,
   SiVuedotjs,
   SiTailwindcss,
+  SiBabel,
 } from "react-icons/si";
 
 const ICONS_DATA: {
@@ -56,6 +57,8 @@ const ICONS_DATA: {
   vue: SiVuedotjs,
   vuetify: SiVuetify,
   tailwindcss: SiTailwindcss,
+  "@babel/core": SiBabel,
+  "@babel/runtime": SiBabel,
 };
 
 export default ICONS_DATA;

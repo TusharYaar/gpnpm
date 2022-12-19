@@ -13,10 +13,11 @@ The Graphic Node Package manager to scan all your projects and notify you when a
 - [x] Add Folders to scan
 - [x] Scan folders for package.json
 - [x] Get dependencies from package.json 
-- [ ] Get dev-dependencies from package.json
+- [x] Get dev-dependencies from package.json
 - [x] Get package version from npm registry
 - [x] Check for possible Updates in packages
 - [ ] Notify User of Updates
-- [ ] Update package.json when user updates
+- [ ] Update package.json when user clicks update package
+- [ ] search for README.md md files 
 
 Made Using Electron & React 

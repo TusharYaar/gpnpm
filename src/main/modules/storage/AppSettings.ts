@@ -1,7 +1,11 @@
-import { Package } from "../../../types";
+import { Project, Package } from "../../../types";
 
 type AllPackages = {
   [key: string]: Package;
+};
+
+type Projects = {
+  [key: string]: Project;
 };
 
 class AppSettings {
@@ -15,7 +19,7 @@ class AppSettings {
   };
   scannedFolders: string[] = [];
   folders: string[] = [];
-  projects: string[] = [];
+  projects: Projects;
   allPackages: AllPackages = {};
   // TODO: MAKE A TYPE
 
@@ -24,6 +28,10 @@ class AppSettings {
     this.created = currentDate;
     this.modified = currentDate;
     this.settings.platform = process.platform;
+    this.projects = {};
+    this.allPackages = {};
+    this.scannedFolders = [];
+    this.folders = [];
   }
 }
 

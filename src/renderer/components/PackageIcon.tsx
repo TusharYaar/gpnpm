@@ -3,11 +3,11 @@ import { Avatar } from "@mantine/core";
 
 import ICONS_DATA from "../data/icons";
 
-const PackageIcon = memo(({ pack }: { pack: string }) => {
+const PackageIcon = memo(({ pack, compact = false }: { pack: string; compact?: boolean }) => {
   const initials = pack.replace("@", "").toUpperCase().slice(0, 2);
   const Component = ICONS_DATA[pack];
 
-  return <Avatar> {Component ? <Component size={36} /> : initials} </Avatar>;
+  return <Avatar size={compact ? "sm" : "md"}>{Component ? <Component size={compact ? 16 : 34} /> : initials} </Avatar>;
 });
 
 export default PackageIcon;
