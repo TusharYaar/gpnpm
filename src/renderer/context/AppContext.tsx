@@ -105,7 +105,7 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
     window.systemAPI.onUpdateCurrentState((_event: IpcRendererEvent, value: SystemCurrentStateType) => {
       setSystemCurrentState(value);
     });
-    window.systemAPI.onError((_event: IpcRendererEvent, value: string) => throwError(value));
+    window.systemAPI.onError((_event: IpcRendererEvent, value: string) => throwError(JSON.stringify(value, null, 4)));
     window.systemAPI.onUpdateStore((_event: IpcRendererEvent, value: AppSettings) => {
       console.log("update Store");
       setStore(value);

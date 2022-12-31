@@ -5,6 +5,7 @@ import { Project } from "../../types";
 import PackageIcon from "./PackageIcon";
 import { sanitizeVersion } from "../../utils/functions";
 import { useApp } from "../context/AppContext";
+import { Remark } from "react-remark";
 
 type Props = {
   name: string;
@@ -16,6 +17,8 @@ const ProjectItem = ({ name, details }: Props) => {
     store: { allPackages },
   } = useApp();
   const pid = useId();
+  const [markdown, setMarkdown] = useState<null | string>(null);
+  const [packageJSON, setPackageJSON] = useState<null | string>(null);
   const [selected, setSelected] = useState([]);
 
   const dependenciesKeys = useMemo(() => {
@@ -32,6 +35,25 @@ const ProjectItem = ({ name, details }: Props) => {
       else return [...prev, id];
     });
   }, []);
+
+  const openExternalLink = useCallback((link: string) => {
+    console.log(link);
+    window.systemAPI.openExternalLink(link);
+  }, []);
+
+  const handleOpenReadme = useCallback(async () => {
+    if (markdown === null && details.markdownLocation) {
+      const text = await window.projectAPI.getFile(details.markdownLocation);
+      setMarkdown(text);
+    }
+  }, [markdown, details]);
+
+  const handleOpenPackageJSON = useCallback(async () => {
+    if (packageJSON === null) {
+      const text = await window.projectAPI.getFile(name);
+      setPackageJSON(text);
+    }
+  }, [name]);
 
   return (
     <Paper>
@@ -53,7 +75,15 @@ const ProjectItem = ({ name, details }: Props) => {
               <Tabs.List>
                 {dependenciesKeys.length > 0 && <Tabs.Tab value="dependencies">Dependencies</Tabs.Tab>}
                 {devDependenciesKeys.length > 0 && <Tabs.Tab value="devDependencies"> Dev Dependencies </Tabs.Tab>}
+                {details.markdownLocation && (
+                  <Tabs.Tab value="markdown" onClick={handleOpenReadme}>
+                    README.md
+                  </Tabs.Tab>
+                )}
                 <Tabs.Tab value="scripts">Scripts </Tabs.Tab>
+                <Tabs.Tab value="packageJSON" onClick={handleOpenPackageJSON}>
+                  package.json
+                </Tabs.Tab>
                 <Tabs.Tab value="raw"> Raw </Tabs.Tab>
               </Tabs.List>
 
@@ -102,8 +132,32 @@ const ProjectItem = ({ name, details }: Props) => {
                   </Flex>
                 ))}
               </Tabs.Panel>
+              <Tabs.Panel value="markdown">
+                <Remark
+                  rehypeReactOptions={{
+                    components: {
+                      a: (props: JSX.IntrinsicElements["a"]) => (
+                        <a
+                          onClick={(e) => {
+                            e.preventDefault();
+                            openExternalLink(props.href);
+                          }}
+                          {...props}
+                        />
+                      ),
+                    },
+                  }}
+                >
+                  {markdown}
+                </Remark>
+              </Tabs.Panel>
+              <Tabs.Panel value="packageJSON">
+                <div>
+                  <pre>{packageJSON}</pre>
+                </div>
+              </Tabs.Panel>
               <Tabs.Panel value="raw">
-                <Code>{JSON.stringify(details, null, 4)}</Code>
+                <Code>{JSON.stringify(details, null, 2)}</Code>
               </Tabs.Panel>
             </Tabs>
           </Accordion.Panel>

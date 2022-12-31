@@ -26,6 +26,7 @@ const Menubar = () => {
       />
       <NavLink label="Folders" component={Link} to="/folders" active={location.pathname === "/folders"} />
       <NavLink label="Settings" component={Link} to="/settings" active={location.pathname === "/settings"} />
+      <NavLink label="Raw" component={Link} to="/raw" active={location.pathname === "/raw"} />
     </Navbar>
   );
 };

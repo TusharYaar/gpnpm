@@ -86,8 +86,12 @@ export const updateStore = (store: AppSettings) => {
   if (mainWindow) mainWindow.webContents.send("SYSTEM-update-store", store);
 };
 
-export const throwError = (error: string) => {
+export const throwError = (error: string | object) => {
   if (mainWindow) mainWindow.webContents.send("SYSTEM:error", error);
 };
+
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+process.on("uncaughtException", (error) => {
+  throwError(error);
+});

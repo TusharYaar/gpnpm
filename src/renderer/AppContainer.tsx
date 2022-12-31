@@ -10,6 +10,7 @@ import AllPackages from "./pages/AllPackages";
 import AllProjects from "./pages/AllProjects";
 import Folders from "./pages/Folders";
 import Settings from "./pages/Settings";
+import Raw from "./pages/Raw";
 
 const AppContainer = () => {
   return (
@@ -30,6 +31,7 @@ const AppContainer = () => {
               <Route path="/all_projects" element={<AllProjects />} />
               <Route path="/folders" element={<Folders />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/raw" element={<Raw />} />
             </Routes>
           </AppShell>
         </HashRouter>

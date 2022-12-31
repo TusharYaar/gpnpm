@@ -20,7 +20,9 @@ import { getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../..
 
 export const attachListeners = () => {
   ipcMain.handle("PROJECT:open-folder-dialog", handleOpenFolderDialog);
+  ipcMain.handle("PROJECT:get-file", (_event: IpcMainInvokeEvent, file: string) => getFile(file));
   ipcMain.on("PROJECT:add-folders", handleAddFolders);
+
   console.log("ATTACHED PROJECTS");
 };
 

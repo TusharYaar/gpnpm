@@ -1,5 +1,5 @@
 import { Menu, app } from "electron";
-import { sendInstruction, throwError } from ".";
+import { sendInstruction } from ".";
 import { checkAvaliblePackageUpdateInProjects, checkForPackageDetails } from "./modules/project";
 
 const relaunchApp = () => {
@@ -38,7 +38,9 @@ const template: Electron.MenuItemConstructorOptions[] = [
             {
               id: "throwError",
               label: "Throw Error",
-              click: () => throwError("Error From Menu"),
+              click: () => {
+                throw new Error("Error From Menu");
+              },
             },
           ],
         },
