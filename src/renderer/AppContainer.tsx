@@ -18,6 +18,7 @@ const AppContainer = () => {
       <MantineProvider withGlobalStyles withNormalizeCSS>
         <HashRouter>
           <AppShell
+            padding={0}
             navbar={<Menubar />}
             header={
               <Header height={50}>

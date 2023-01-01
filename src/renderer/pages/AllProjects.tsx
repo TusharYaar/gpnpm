@@ -1,6 +1,7 @@
-import { Button, Container, Flex, Menu, Pagination, TextInput, Title } from "@mantine/core";
+import { Button, Box, Flex, Menu, ScrollArea, TextInput, Title } from "@mantine/core";
 import React, { useDeferredValue, useMemo, useState } from "react";
 import ProjectItem from "../components/ProjectItem";
+import ViewProjectItem from "../components/ViewProjectItem";
 import { useApp } from "../context/AppContext";
 
 const sortOptions = {
@@ -14,11 +15,11 @@ const sortOptions = {
 
 const AllProjects = () => {
   const { store } = useApp();
-  // const [selected, useSelected] = useState([]);
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [sortBy, setSortBy] = useState<keyof typeof sortOptions>("name_ascending");
-  const [page, setPage] = useState(0);
+
+  const [activeProject, setActiveProject] = useState("");
 
   const projects = useMemo(() => {
     if (!store.projects) return {};
@@ -32,22 +33,27 @@ const AllProjects = () => {
     allKeys.forEach((key) => {
       obj[key] = store.projects[key];
     });
-    setPage(0);
     return obj;
   }, [store, sortBy, deferredSearch]);
 
   return (
-    <Container>
-      <Flex align="center" gap="sm">
-        <Title order={3}>{Object.keys(store.projects).length} </Title> Projects
-      </Flex>
-      <Flex justify="space-between" align="center">
-        <TextInput
-          value={search}
-          onChange={(t) => setSearch(t.target.value)}
-          placeholder="e.g. react"
-          label="Search Package"
-        />
+    <Flex style={{ height: "calc(100vh - 50px)" }} direction="row">
+      <ScrollArea style={{ width: "50%" }} p="sm">
+        <Flex justify="space-between" align="center">
+          <Title>All Projects</Title>
+          <Button>Add NEw </Button>
+        </Flex>
+        <Flex align="center" gap="sm">
+          <Title order={3}>{Object.keys(store.projects).length} </Title> Projects
+        </Flex>
+        <Box>
+          <TextInput
+            value={search}
+            onChange={(t) => setSearch(t.target.value)}
+            placeholder="e.g. react"
+            label="Search Package"
+          />
+        </Box>
         <Flex direction="column" align="flex-end">
           <Menu shadow="md" width={200}>
             <Menu.Target>
@@ -55,7 +61,6 @@ const AllProjects = () => {
                 {`Sort: ${sortOptions[sortBy].label}`}
               </Button>
             </Menu.Target>
-
             <Menu.Dropdown>
               <Menu.Label>Application</Menu.Label>
               {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
@@ -66,21 +71,15 @@ const AllProjects = () => {
               <Menu.Divider />
             </Menu.Dropdown>
           </Menu>
-          <Pagination
-            size="xs"
-            my="sm"
-            page={page + 1}
-            onChange={(p) => setPage(p - 1)}
-            total={store ? Math.ceil(Object.keys(projects).length / 20) : 1}
-          />
         </Flex>
-      </Flex>
-      {Object.keys(projects)
-        .slice(page * 20, page * 20 + 20)
-        .map((pack) => (
-          <ProjectItem key={pack} name={pack} details={store.projects[pack]} />
+        {Object.keys(projects).map((pack) => (
+          <ProjectItem key={pack} name={pack} onClick={() => setActiveProject(pack)} />
         ))}
-    </Container>
+      </ScrollArea>
+      <ScrollArea style={{ width: "100%" }}>
+        {activeProject.length > 0 && <ViewProjectItem details={store.projects[activeProject]} name={activeProject} />}
+      </ScrollArea>
+    </Flex>
   );
 };
 
