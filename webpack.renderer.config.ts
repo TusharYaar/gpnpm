@@ -1,5 +1,7 @@
-const rules = require("./webpack.rules");
-const plugins = require("./webpack.plugins");
+import type { Configuration } from "webpack";
+
+import { rules } from "./webpack.rules";
+import { plugins } from "./webpack.plugins";
 
 rules.push(
   {
@@ -16,12 +18,12 @@ rules.push(
   }
 );
 
-module.exports = {
+export const rendererConfig: Configuration = {
   module: {
     rules,
   },
-  plugins: plugins,
+  plugins,
   resolve: {
-    extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".svg"],
+    extensions: [".js", ".ts", ".jsx", ".tsx", ".css"],
   },
 };

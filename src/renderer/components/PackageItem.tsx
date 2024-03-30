@@ -13,20 +13,7 @@ const PackageItem = ({ name, onClick, active = false }: Props) => {
     active;
   }
   return (
-    <Box
-      onClick={onClick}
-      sx={(theme) => ({
-        backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.gray[0],
-        display: "flex",
-        alignItems: "center",
-        padding: theme.spacing.sm,
-        cursor: "pointer",
-
-        "&:hover": {
-          backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.gray[1],
-        },
-      })}
-    >
+    <Box onClick={onClick}>
       <PackageIcon pack={name} />
       <Text>{name}</Text>
     </Box>
@@ -34,3 +21,15 @@ const PackageItem = ({ name, onClick, active = false }: Props) => {
 };
 
 export default PackageItem;
+
+// sx={(theme) => ({
+//   backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.gray[0],
+//   display: "flex",
+//   alignItems: "center",
+//   padding: theme.spacing.sm,
+//   cursor: "pointer",
+
+//   "&:hover": {
+//     backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.gray[1],
+//   },
+// })}
