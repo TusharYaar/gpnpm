@@ -6,11 +6,14 @@ contextBridge.exposeInMainWorld("projectAPI", {
   openFolderDialog: () => ipcRenderer.invoke("PROJECT:open-folder-dialog"),
   addFolders: (folders: string[]) => ipcRenderer.send("PROJECT:add-folders", folders),
   getFile: (file: string) => ipcRenderer.invoke("PROJECT:get-file", file),
+  updateProjectTitle: (project: string, title: string) => ipcRenderer.send("PROJECT:update-title", [project, title]),
+  updateProjectNotification: (project: string) => ipcRenderer.send("PROJECT:update-title", project),
 });
 
 contextBridge.exposeInMainWorld("systemAPI", {
   getSystemInfo: () => ipcRenderer.invoke("SYSTEM:get-info"),
   openExternalLink: (link: string) => ipcRenderer.send("SYSTEM:open-external-link", link),
+  runCommandInTerminal: (command: string) => ipcRenderer.send("SYSTEM:run-command", command),
   getStore: () => ipcRenderer.invoke("STORAGE:get-store"),
   onUpdateCurrentState: (callback: () => void) => ipcRenderer.on("SYSTEM:update-current-state", callback),
   onNewInstruction: (callback: () => void) => ipcRenderer.on("SYSTEM:instruction", callback),

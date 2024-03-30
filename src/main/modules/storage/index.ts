@@ -4,7 +4,7 @@ import AppSettings from "./AppSettings";
 import { APP_SETTINGS_FILE_PATH } from "../../utils/constants";
 import { throwError, updateStore } from "../../index";
 import { ipcMain } from "electron";
-import { Package } from "../../../types";
+import { Package, Project } from "../../../types";
 
 let APP_SETTINGS = new AppSettings();
 
@@ -84,6 +84,7 @@ export const addScannedFoldersToStorage = (folders: string[]) => {
 
 export const addNewProjectToStorage = (
   project: string,
+  title = "",
   dependencies: {
     [key: string]: string;
   },
@@ -104,6 +105,8 @@ export const addNewProjectToStorage = (
     };
   } else {
     APP_SETTINGS.projects[project] = {
+      title,
+      notify: true,
       scripts: scripts,
       dependencies,
       devDependencies,
@@ -148,3 +151,12 @@ export const updatePackageDetails = (pack: string, details: Package, shouldUpdat
 };
 
 getAppSettings(true);
+
+export const updateProjectDetails = (project: string, details: Partial<Project>) => {
+  if (APP_SETTINGS.projects[project] !== undefined)
+    APP_SETTINGS.projects[project] = {
+      ...APP_SETTINGS.projects[project],
+      ...details,
+    };
+  updateAppSettings();
+};

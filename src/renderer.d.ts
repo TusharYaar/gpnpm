@@ -5,10 +5,12 @@ export interface projectAPI {
   addFolders: (folders: string[]) => void;
   openFolderDialog: () => Promise<Electron.OpenDialogReturnValue>;
   getFile: (file: string) => Promise<string>;
+  updateProjectTitle: (project: string, title: string) => void;
 }
 
 export interface systemAPI {
   openExternalLink: (link: string) => void;
+  runCommandInTerminal: (command: string) => void;
   getSystemInfo: () => Promise<SystemInfo>;
   getStore: () => Promise<AppSettings>;
   onUpdateCurrentState: (callback) => void;

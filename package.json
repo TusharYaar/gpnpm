@@ -90,7 +90,7 @@
   },
   "dependencies": {
     "@emotion/react": "^11.10.4",
-    "@mantine/core": "^5.9.2",
+    "@mantine/core": "^5.10.3",
     "@mantine/form": "^5.9.2",
     "@mantine/hooks": "^5.9.2",
     "axios": "^1.2.1",

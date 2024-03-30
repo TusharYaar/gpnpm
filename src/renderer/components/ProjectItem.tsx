@@ -1,19 +1,21 @@
 import React from "react";
-import { Box, Breadcrumbs } from "@mantine/core";
+import { Box, Text } from "@mantine/core";
 
 type Props = {
-  name: string;
+  title: string;
+  path: string;
   onClick: () => void;
 };
 
-const ProjectItem = ({ name, onClick }: Props) => {
+const ProjectItem = ({ title, path, onClick }: Props) => {
   return (
     <Box
       onClick={onClick}
       sx={(theme) => ({
         backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.gray[0],
         display: "flex",
-        alignItems: "center",
+        flexDirection: "column",
+        alignItems: "flex-start",
         padding: theme.spacing.sm,
         cursor: "pointer",
         wordBreak: "break-all",
@@ -23,7 +25,8 @@ const ProjectItem = ({ name, onClick }: Props) => {
         },
       })}
     >
-      <Breadcrumbs separator="→">{name.split("\\").splice(0, name.split("\\").length - 2)}</Breadcrumbs>
+      <Text fw={700}>{title}</Text>
+      <Text fz="xs">{path}</Text>
     </Box>
   );
 };

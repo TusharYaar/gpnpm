@@ -1,25 +1,32 @@
-import React, { useCallback, useId, useMemo, useState } from "react";
-import { Badge, Code, Flex, Tabs, Text, Box, Title } from "@mantine/core";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Code, Flex, Tabs, Text, Box, TextInput, Button } from "@mantine/core";
 
 import { Project } from "../../types";
 import PackageIcon from "./PackageIcon";
 import { sanitizeVersion } from "../../utils/functions";
 import { useApp } from "../context/AppContext";
 import { Remark } from "react-remark";
+import DepedencyItem from "./DependencyItem";
 
 type Props = {
-  name: string;
+  path: string;
   details: Project;
 };
 
-const ViewProjectItem = ({ name, details }: Props) => {
+const ViewProjectItem = ({ path, details }: Props) => {
   const {
     store: { allPackages },
   } = useApp();
-  const pid = useId();
   const [markdown, setMarkdown] = useState<null | string>(null);
   const [packageJSON, setPackageJSON] = useState<null | string>(null);
-  const [selected, setSelected] = useState([]);
+  // const [selected, setSelected] = useState([]);
+  const [editTitle, setEditTitle] = useState(false);
+
+  const [title, setTitle] = useState(details.title);
+
+  useEffect(() => {
+    setTitle(details.title);
+  }, [details]);
 
   const dependenciesKeys = useMemo(() => {
     return Object.keys(details.dependencies);
@@ -29,12 +36,12 @@ const ViewProjectItem = ({ name, details }: Props) => {
     return Object.keys(details.devDependencies);
   }, [details]);
 
-  const toggleSelected = useCallback((id: string) => {
-    setSelected((prev) => {
-      if (prev.includes(id)) return prev.filter((p) => p !== id);
-      else return [...prev, id];
-    });
-  }, []);
+  // const toggleSelected = useCallback((id: string) => {
+  //   setSelected((prev) => {
+  //     if (prev.includes(id)) return prev.filter((p) => p !== id);
+  //     else return [...prev, id];
+  //   });
+  // }, []);
 
   const openExternalLink = useCallback((link: string) => {
     console.log(link);
@@ -50,14 +57,26 @@ const ViewProjectItem = ({ name, details }: Props) => {
 
   const handleOpenPackageJSON = useCallback(async () => {
     if (packageJSON === null) {
-      const text = await window.projectAPI.getFile(name);
+      const text = await window.projectAPI.getFile(path);
       setPackageJSON(text);
     }
-  }, [name]);
+  }, [path]);
+
+  const handleUpdateTitle = useCallback(
+    (edit: boolean, title: string) => {
+      if (edit) {
+        setEditTitle(false);
+        window.projectAPI.updateProjectTitle(path, title);
+      } else setEditTitle(true);
+    },
+    [path]
+  );
 
   return (
     <Box>
-      <Title>{name}</Title>
+      <TextInput value={title} onChange={(text) => setTitle(text.target.value)} disabled={!editTitle} m={"md"} />
+      <Button onClick={() => handleUpdateTitle(editTitle, title)}>Edit Title</Button>
+      <Text>{path}</Text>
       <Tabs defaultValue="dependencies">
         <Tabs.List>
           {dependenciesKeys.length > 0 && <Tabs.Tab value="dependencies">Dependencies</Tabs.Tab>}
@@ -76,33 +95,12 @@ const ViewProjectItem = ({ name, details }: Props) => {
 
         <Tabs.Panel value="dependencies">
           {dependenciesKeys.map((dep) => (
-            <Flex key={`${pid}-d-${dep}`} my="sm" align="center">
-              <PackageIcon
-                compact={true}
-                pack={dep}
-                onClick={() => toggleSelected(dep)}
-                isSelected={selected.includes(dep)}
-              />
-              <Text mx="sm" fz="xs">
-                {dep}: {sanitizeVersion(details.dependencies[dep])}
-              </Text>
-              <Flex align="center">
-                {allPackages[dep]?.usedIn[name]?.updates?.major && (
-                  <Badge color="green">Major Update {allPackages[dep].usedIn[name].updates.major}</Badge>
-                )}
-                {allPackages[dep]?.usedIn[name]?.updates?.minor && (
-                  <Badge color="yellow">minor Update {allPackages[dep].usedIn[name].updates.minor}</Badge>
-                )}
-                {allPackages[dep]?.usedIn[name]?.updates?.patch && (
-                  <Badge color="red">patch Update {allPackages[dep].usedIn[name].updates.patch}</Badge>
-                )}
-              </Flex>
-            </Flex>
+            <DepedencyItem key={dep} dependency={dep} details={allPackages[dep]} project={path} />
           ))}
         </Tabs.Panel>
         <Tabs.Panel value="devDependencies">
           {devDependenciesKeys.map((dep) => (
-            <Flex key={`${pid}-d-${dep}`} my="sm" align="center">
+            <Flex key={`d-${dep}`} my="sm" align="center">
               <PackageIcon compact={true} pack={dep} />
               <Text mx="sm" fz="xs">
                 {dep}: {sanitizeVersion(details.devDependencies[dep])}
@@ -112,7 +110,7 @@ const ViewProjectItem = ({ name, details }: Props) => {
         </Tabs.Panel>
         <Tabs.Panel value="scripts">
           {Object.keys(details.scripts).map((script) => (
-            <Flex key={`${pid}-s-${script}`} my="sm" align="center">
+            <Flex key={`s-${script}`} my="sm" align="center">
               <Text mx="sm" fz="xs">
                 {script} - {details.scripts[script]}
               </Text>

@@ -5,6 +5,8 @@ export interface SystemInfo {
 export type SystemUpdateStates = "starting" | "getting-packages" | "getting-package-details" | "";
 
 export type Project = {
+  title: string;
+  notify: boolean;
   scripts: {
     [key: string]: string;
   };

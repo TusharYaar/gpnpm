@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Menu, ScrollArea, TextInput, Title } from "@mantine/core";
+import { Box, Button, Flex, Menu, TextInput, Title } from "@mantine/core";
 import React, { useMemo, useState, useDeferredValue } from "react";
 import PackageItem from "../components/PackageItem";
 import ViewPackageItem from "../components/ViewPackageItem";
@@ -50,7 +50,7 @@ const AllPackages = () => {
 
   return (
     <Flex style={{ height: "calc(100vh - 50px)" }}>
-      <ScrollArea style={{ width: "50%" }} p="sm">
+      <Box p="sm">
         <Title>All Packages</Title>
         <Flex align="center" gap="sm">
           <Title order={3}>{Object.keys(store.allPackages).length} </Title>
@@ -59,13 +59,7 @@ const AllPackages = () => {
           projects
         </Flex>
         <Box>
-          <TextInput
-            width="100%"
-            value={search}
-            onChange={(t) => setSearch(t.target.value)}
-            placeholder="e.g. react"
-            label="Search Package"
-          />
+          <TextInput width="100%" value={search} onChange={(t) => setSearch(t.target.value)} placeholder="e.g. react" />
         </Box>
         <Flex direction="column" align="flex-end">
           <Menu shadow="md" width={200}>
@@ -89,12 +83,12 @@ const AllPackages = () => {
         {Object.keys(packages).map((pack) => (
           <PackageItem key={pack} name={pack} onClick={() => setActivePackage(pack)} active={pack === activePackage} />
         ))}
-      </ScrollArea>
-      <ScrollArea style={{ width: "100%", borderLeft: "2px solid green" }} p="sm">
+      </Box>
+      <Box p="sm">
         {activePackage.length > 0 && (
           <ViewPackageItem details={store.allPackages[activePackage]} name={activePackage} />
         )}
-      </ScrollArea>
+      </Box>
     </Flex>
   );
 };

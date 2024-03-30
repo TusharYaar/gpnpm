@@ -1,6 +1,6 @@
 import { ipcMain, dialog, IpcMainInvokeEvent } from "electron";
 import { readdir, lstat } from "node:fs/promises";
-import { join as pathJoin } from "path";
+import { join as pathJoin, basename } from "path";
 import fs from "fs";
 import { EXCLUDED_FOLDERS } from "../../utils/constants";
 import {
@@ -12,6 +12,7 @@ import {
   getAppSettings,
   updateAppSettings,
   updatePackageUsedInDetails,
+  updateProjectDetails,
 } from "../storage";
 import { sendUpdateState, throwError } from "../../index";
 import axios from "axios";
@@ -22,6 +23,12 @@ export const attachListeners = () => {
   ipcMain.handle("PROJECT:open-folder-dialog", handleOpenFolderDialog);
   ipcMain.handle("PROJECT:get-file", (_event: IpcMainInvokeEvent, file: string) => getFile(file));
   ipcMain.on("PROJECT:add-folders", handleAddFolders);
+  ipcMain.on("PROJECT:update-title", (_event: IpcMainInvokeEvent, args: [string, string]) =>
+    updateProjectTitle(...args)
+  );
+  ipcMain.on("PROJECT:update-notification", (_event: IpcMainInvokeEvent, args: [string, string]) =>
+    updateProjectTitle(...args)
+  );
 
   console.log("ATTACHED PROJECTS");
 };
@@ -72,6 +79,7 @@ const handleAddFolders = (_event: IpcMainInvokeEvent, folders: string[]) => {
   sendUpdateState("getting_dependencies");
   addNewFoldersToStorage(folders);
   for (const index in folders) {
+    const title = basename(folders[index]);
     const project = pathJoin(folders[index], "package.json");
     const file = getFile(project, "json");
 
@@ -93,7 +101,7 @@ const handleAddFolders = (_event: IpcMainInvokeEvent, folders: string[]) => {
       const markdownFile = pathJoin(folders[index], "README.md");
       markdown = fs.existsSync(markdownFile) ? markdownFile : null;
     }
-    addNewProjectToStorage(project, dependencies, devDependencies, scripts, markdown);
+    addNewProjectToStorage(project, title, dependencies, devDependencies, scripts, markdown);
   }
 
   updateAppSettings();
@@ -173,4 +181,18 @@ export const checkAvaliblePackageUpdateInProjects = async () => {
     updatePackageUsedInDetails(pack, usedIn, index === total);
   }
   sendUpdateState("idle");
+};
+
+export const updateProjectTitle = async (pack: string, title: string) => {
+  console.log({ pack, title });
+  try {
+    updateProjectDetails(pack, { title });
+  } catch (e) {
+    console.log(e);
+  }
+  //
+};
+
+export const updateProjectNotification = async () => {
+  //
 };

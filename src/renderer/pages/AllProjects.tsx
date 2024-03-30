@@ -47,12 +47,7 @@ const AllProjects = () => {
           <Title order={3}>{Object.keys(store.projects).length} </Title> Projects
         </Flex>
         <Box>
-          <TextInput
-            value={search}
-            onChange={(t) => setSearch(t.target.value)}
-            placeholder="e.g. react"
-            label="Search Package"
-          />
+          <TextInput value={search} onChange={(t) => setSearch(t.target.value)} placeholder="e.g. react" />
         </Box>
         <Flex direction="column" align="flex-end">
           <Menu shadow="md" width={200}>
@@ -62,7 +57,7 @@ const AllProjects = () => {
               </Button>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Label>Application</Menu.Label>
+              <Menu.Label>Sort By</Menu.Label>
               {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
                 <Menu.Item onClick={() => setSortBy(option)} key={option}>
                   {sortOptions[option].label}
@@ -72,12 +67,17 @@ const AllProjects = () => {
             </Menu.Dropdown>
           </Menu>
         </Flex>
-        {Object.keys(projects).map((pack) => (
-          <ProjectItem key={pack} name={pack} onClick={() => setActiveProject(pack)} />
+        {Object.entries(projects).map((project) => (
+          <ProjectItem
+            key={project[0]}
+            title={project[1].title}
+            path={project[0]}
+            onClick={() => setActiveProject(project[0])}
+          />
         ))}
       </ScrollArea>
       <ScrollArea style={{ width: "100%" }}>
-        {activeProject.length > 0 && <ViewProjectItem details={store.projects[activeProject]} name={activeProject} />}
+        {activeProject.length > 0 && <ViewProjectItem details={store.projects[activeProject]} path={activeProject} />}
       </ScrollArea>
     </Flex>
   );
