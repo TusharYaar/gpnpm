@@ -1,33 +1,47 @@
-import { Button, NavLink } from "@mantine/core";
-import React from "react";
+import { Tooltip, ActionIcon, Flex } from "@mantine/core";
 import { useApp } from "../context/AppContext";
-
-import { Link, useLocation } from "react-router-dom";
+import { TbFolderPlus, TbHome, TbSourceCode, TbSettings, TbPackages, TbDeviceDesktopCode } from "react-icons/tb";
+import { Link } from "react-router-dom";
 
 const Menubar = () => {
   const { openFileAddDialog } = useApp();
-  const location = useLocation();
-
   return (
-    <>
-      <Button onClick={openFileAddDialog}>Add Folder</Button>
-      <NavLink label="Home" component={Link} to="/" active={location.pathname === "/"} />
-      <NavLink
-        label="All Packages"
-        component={Link}
-        to="/all_packages"
-        active={location.pathname === "/all_packages"}
-      />
-      <NavLink
-        label="All Projects"
-        component={Link}
-        to="/all_projects"
-        active={location.pathname === "/all_projects"}
-      />
-      <NavLink label="Folders" component={Link} to="/folders" active={location.pathname === "/folders"} />
-      <NavLink label="Settings" component={Link} to="/settings" active={location.pathname === "/settings"} />
-      <NavLink label="Raw" component={Link} to="/raw" active={location.pathname === "/raw"} />
-    </>
+    <Flex justify="space-between" direction="column" align="center" flex="1">
+      <div>
+        <Tooltip label="Add New Folder" position="right">
+          <ActionIcon onClick={openFileAddDialog} size={40} variant="transparent">
+            <TbFolderPlus size={24} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Home" position="right">
+          <ActionIcon size={40} variant="transparent" component={Link} to="/">
+            <TbHome size={24} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="All Packages" position="right">
+          <ActionIcon size={40} variant="transparent" component={Link} to="/all_packages">
+            <TbPackages size={24} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="All Projects" position="right">
+          <ActionIcon size={40} variant="transparent" component={Link} to="/all_projects">
+            <TbDeviceDesktopCode size={24} />
+          </ActionIcon>
+        </Tooltip>
+      </div>
+      <div>
+        <Tooltip label="Settings" position="right">
+          <ActionIcon size={40} variant="transparent" component={Link} to="/settings">
+            <TbSettings size={24} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Raw Data" position="right">
+          <ActionIcon size={40} variant="transparent" component={Link} to="/raw">
+            <TbSourceCode size={24} />
+          </ActionIcon>
+        </Tooltip>
+      </div>
+    </Flex>
   );
 };
 

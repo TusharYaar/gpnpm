@@ -16,8 +16,11 @@ const AppContainer = () => {
       <AppShell
         padding={0}
         navbar={{
-          width: 300,
+          width: 40,
           breakpoint: 0,
+        }}
+        footer={{
+          height: 24,
         }}
       >
         <AppShell.Navbar zIndex={1}>
