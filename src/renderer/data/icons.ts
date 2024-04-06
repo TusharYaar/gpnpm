@@ -1,4 +1,6 @@
-import { IconType } from "react-icons/lib/esm/iconBase";
+import type { IconType } from "react-icons";
+
+// IconType
 import {
   SiReact,
   SiChakraui,
@@ -6,7 +8,7 @@ import {
   SiMocha,
   SiBootstrap,
   SiExpo,
-  SiMaterialui,
+  // SiMaterialui,
   SiReactrouter,
   SiReacttable,
   SiSemanticuireact,
@@ -43,8 +45,8 @@ const ICONS_DATA: {
   mocha: SiMocha,
   bootstrap: SiBootstrap,
   expo: SiExpo,
-  "@mui/material": SiMaterialui,
-  "@material-ui/core": SiMaterialui,
+  // "@mui/material": SiMaterialui,
+  // "@material-ui/core": SiMaterialui,
   "react-router-dom": SiReactrouter,
   "react-table": SiReacttable,
   "semantic-ui-react": SiSemanticuireact,

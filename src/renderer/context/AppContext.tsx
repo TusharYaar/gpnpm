@@ -1,4 +1,3 @@
-import { IpcRendererEvent } from "electron";
 import React, { useContext, createContext, useCallback, useState, useEffect } from "react";
 import AppSettings from "../../main/modules/storage/AppSettings";
 import { SystemCurrentStateType, SystemInfo } from "../../types";
@@ -102,18 +101,18 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
   }, [getSystemInfo]);
 
   useEffect(() => {
-    window.systemAPI.onUpdateCurrentState((_event: IpcRendererEvent, value: SystemCurrentStateType) => {
+    window.systemAPI.onUpdateCurrentState((_event: any, value: SystemCurrentStateType) => {
       setSystemCurrentState(value);
     });
-    window.systemAPI.onError((_event: IpcRendererEvent, value: string) => throwError(JSON.stringify(value, null, 4)));
-    window.systemAPI.onUpdateStore((_event: IpcRendererEvent, value: AppSettings) => {
+    window.systemAPI.onError((_event: any, value: string) => throwError(JSON.stringify(value, null, 4)));
+    window.systemAPI.onUpdateStore((_event: any, value: AppSettings) => {
       console.log("update Store");
       setStore(value);
     });
   }, []);
 
   useEffect(() => {
-    window.systemAPI.onNewInstruction((_event: IpcRendererEvent, value: { instruction: string; data: unknown }) => {
+    window.systemAPI.onNewInstruction((_event: any, value: { instruction: string; data: unknown }) => {
       if (value.instruction === "open_add_folder") openFileAddDialog();
     });
   }, []);

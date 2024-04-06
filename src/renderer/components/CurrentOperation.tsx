@@ -1,5 +1,4 @@
-import { Progress, Text } from "@mantine/core";
-import React from "react";
+import { Box, Progress, Text } from "@mantine/core";
 import { useApp } from "../context/AppContext";
 
 const CurrentOperation = () => {
@@ -7,11 +6,11 @@ const CurrentOperation = () => {
     systemCurrentState: { state, data },
   } = useApp();
   return (
-    <div>
+    <Box style={{ zIndex: 10 }}>
       <Text fz="xs">{state}</Text>
       {state === "fetching_package_details" && <Progress value={(data.current * 100) / data.total} />}
       {state === "fetching_package_details" && `${data.package}  ${data.current} of ${data.total}`}
-    </div>
+    </Box>
   );
 };
 

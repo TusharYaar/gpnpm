@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Menu, TextInput, Title } from "@mantine/core";
+import { Box, Button, Flex, Menu, ScrollArea, TextInput, Title } from "@mantine/core";
 import React, { useMemo, useState, useDeferredValue } from "react";
 import PackageItem from "../components/PackageItem";
 import ViewPackageItem from "../components/ViewPackageItem";
@@ -49,46 +49,58 @@ const AllPackages = () => {
   }, [store, sortBy, deferredSearch]);
 
   return (
-    <Flex style={{ height: "calc(100vh - 50px)" }}>
-      <Box p="sm">
-        <Title>All Packages</Title>
-        <Flex align="center" gap="sm">
-          <Title order={3}>{Object.keys(store.allPackages).length} </Title>
-          node packages across
-          <Title order={3}>{Object.keys(store.projects).length}</Title>
-          projects
-        </Flex>
-        <Box>
-          <TextInput width="100%" value={search} onChange={(t) => setSearch(t.target.value)} placeholder="e.g. react" />
-        </Box>
-        <Flex direction="column" align="flex-end">
-          <Menu shadow="md" width={200}>
-            <Menu.Target>
-              <Button variant="subtle" compact={true}>
-                {`Sort: ${sortOptions[sortBy].label}`}
-              </Button>
-            </Menu.Target>
+    <Flex style={{ height: "calc(100vh - 20px)" }}>
+      <ScrollArea>
+        <Box p="sm">
+          <Title>All Packages</Title>
+          <Flex align="center" gap="sm">
+            <Title order={3}>{Object.keys(store.allPackages).length} </Title>
+            node packages across
+            <Title order={3}>{Object.keys(store.projects).length}</Title>
+            projects
+          </Flex>
+          <Box>
+            <TextInput
+              width="100%"
+              value={search}
+              onChange={(t) => setSearch(t.target.value)}
+              placeholder="e.g. react"
+            />
+          </Box>
+          <Flex direction="column" align="flex-end">
+            <Menu shadow="md" width={200}>
+              <Menu.Target>
+                <Button variant="subtle">{`Sort: ${sortOptions[sortBy].label}`}</Button>
+              </Menu.Target>
 
-            <Menu.Dropdown>
-              <Menu.Label>Application</Menu.Label>
-              {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
-                <Menu.Item onClick={() => setSortBy(option)} key={option}>
-                  {sortOptions[option].label}
-                </Menu.Item>
-              ))}
-              <Menu.Divider />
-            </Menu.Dropdown>
-          </Menu>
-        </Flex>
-        {Object.keys(packages).map((pack) => (
-          <PackageItem key={pack} name={pack} onClick={() => setActivePackage(pack)} active={pack === activePackage} />
-        ))}
-      </Box>
-      <Box p="sm">
+              <Menu.Dropdown>
+                <Menu.Label>Application</Menu.Label>
+                {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
+                  <Menu.Item onClick={() => setSortBy(option)} key={option}>
+                    {sortOptions[option].label}
+                  </Menu.Item>
+                ))}
+                <Menu.Divider />
+              </Menu.Dropdown>
+            </Menu>
+          </Flex>
+          {Object.keys(packages).map((pack) => (
+            <PackageItem
+              key={pack}
+              name={pack}
+              onClick={() => setActivePackage(pack)}
+              active={pack === activePackage}
+            />
+          ))}
+        </Box>
+      </ScrollArea>
+      <ScrollArea w={"calc(100vh - 20px)"}>
+        {/* <Flex p="sm" flex={1}> */}
         {activePackage.length > 0 && (
           <ViewPackageItem details={store.allPackages[activePackage]} name={activePackage} />
         )}
-      </Box>
+        {/* </Flex> */}
+      </ScrollArea>
     </Flex>
   );
 };

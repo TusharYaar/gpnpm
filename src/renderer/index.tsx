@@ -1,10 +1,18 @@
-import React from "react";
+import "@mantine/core/styles.css";
 import { createRoot } from "react-dom/client";
 import AppContainer from "./AppContainer";
+import { AppProvider } from "./context/AppContext";
+import { MantineProvider } from "@mantine/core";
 
-function render() {
-  const container = document.getElementById("root");
-  const root = createRoot(container);
-  root.render(<AppContainer />);
+function App() {
+  return (
+    <AppProvider>
+      <MantineProvider>
+        <AppContainer />
+      </MantineProvider>
+    </AppProvider>
+  );
 }
-render();
+
+const root = createRoot(document.body);
+root.render(<App />);

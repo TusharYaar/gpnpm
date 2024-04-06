@@ -1,4 +1,4 @@
-import { Button, Navbar, NavLink } from "@mantine/core";
+import { Button, NavLink } from "@mantine/core";
 import React from "react";
 import { useApp } from "../context/AppContext";
 
@@ -9,7 +9,7 @@ const Menubar = () => {
   const location = useLocation();
 
   return (
-    <Navbar width={{ base: 200 }} p="xs">
+    <>
       <Button onClick={openFileAddDialog}>Add Folder</Button>
       <NavLink label="Home" component={Link} to="/" active={location.pathname === "/"} />
       <NavLink
@@ -27,7 +27,7 @@ const Menubar = () => {
       <NavLink label="Folders" component={Link} to="/folders" active={location.pathname === "/folders"} />
       <NavLink label="Settings" component={Link} to="/settings" active={location.pathname === "/settings"} />
       <NavLink label="Raw" component={Link} to="/raw" active={location.pathname === "/raw"} />
-    </Navbar>
+    </>
   );
 };
 

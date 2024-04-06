@@ -52,9 +52,7 @@ const AllProjects = () => {
         <Flex direction="column" align="flex-end">
           <Menu shadow="md" width={200}>
             <Menu.Target>
-              <Button variant="subtle" compact={true}>
-                {`Sort: ${sortOptions[sortBy].label}`}
-              </Button>
+              <Button variant="subtle">{`Sort: ${sortOptions[sortBy].label}`}</Button>
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Label>Sort By</Menu.Label>

@@ -24,11 +24,11 @@ const ViewPackageItem = ({ name, details }: Props) => {
   return (
     <div>
       <Box
-        sx={(theme) => ({
-          backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.blue[1],
-          padding: theme.spacing.sm,
-          borderRadius: theme.radius.md,
-        })}
+      // sx={(theme) => ({
+      //   backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.blue[1],
+      //   padding: theme.spacing.sm,
+      //   borderRadius: theme.radius.md,
+      // })}
       >
         <Flex>
           <PackageIcon pack={name} />
