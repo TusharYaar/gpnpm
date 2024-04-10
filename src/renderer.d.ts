@@ -3,7 +3,7 @@ import { SystemInfo } from "./types";
 
 export interface projectAPI {
   openFolderDialog: () => void;
-  getFile: (file: string) => Promise<string>;
+  getFile: (file: string, type?: string) => Promise<string>;
   updateProjectTitle: (project: string, title: string) => void;
   addNewProjects: (projects: string[]) => void;
 }

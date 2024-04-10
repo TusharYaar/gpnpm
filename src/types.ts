@@ -8,7 +8,7 @@ export type Project = {
   projectLocation: string;
   packageJsonLocation: string;
   markdownLocation: string | null;
-  iconLocation: "";
+  iconLocation: string | null;
   title: string;
   notify: boolean;
   scripts: {

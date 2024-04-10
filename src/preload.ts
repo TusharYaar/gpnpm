@@ -5,7 +5,7 @@ import { contextBridge, ipcRenderer } from "electron";
 contextBridge.exposeInMainWorld("projectAPI", {
   openFolderDialog: () => ipcRenderer.send("PROJECT:open-folder-dialog"),
   // addFolders: (folders: string[]) => ipcRenderer.send("PROJECT:add-folders", folders),
-  getFile: (file: string) => ipcRenderer.invoke("PROJECT:get-file", file),
+  getFile: (file: string, type?: string) => ipcRenderer.invoke("PROJECT:get-file", file, type),
   updateProjectTitle: (project: string, title: string) => ipcRenderer.send("PROJECT:update-title", [project, title]),
   updateProjectNotification: (project: string) => ipcRenderer.send("PROJECT:update-title", project),
   // onSelectNewProjects: (callback: () => void) => ipcRenderer.on("PROJECT:select-new-projects", callback),

@@ -1,13 +1,23 @@
-import React, { useCallback, useState } from "react";
-import { Code, Flex, Tabs, Text, Box, TextInput, Button, Table } from "@mantine/core";
-
+import { useCallback, useState, useEffect } from "react";
+import {
+  Code,
+  Flex,
+  Tabs,
+  Text,
+  Box,
+  Table,
+  Breadcrumbs,
+  Title,
+  Divider,
+  ActionIcon,
+  BackgroundImage,
+  TextInput,
+} from "@mantine/core";
+import { TbPencil, TbCheck } from "react-icons/tb";
 import { Project } from "../../types";
-// import PackageIcon from "./PackageIcon";
-// import { sanitizeVersion } from "../../utils/functions";
-// import { useApp } from "../context/AppContext";
 import { Remark } from "react-remark";
 import { sanitizeVersion } from "../../utils/functions";
-// import DepedencyItem from "./DependencyItem";
+import image from "../assets/bg-9.png";
 
 type Props = {
   path: string;
@@ -15,19 +25,19 @@ type Props = {
 };
 
 const ViewProjectItem = ({ path, project }: Props) => {
-  // const {
-  //   store: { allPackages },
-  // } = useApp();
   const [markdown, setMarkdown] = useState<null | string>(null);
+  const [icon, setIcon] = useState("");
   const [packageJSON, setPackageJSON] = useState<null | string>(null);
   // const [selected, setSelected] = useState([]);
   const [editTitle, setEditTitle] = useState(false);
-
   const [title, setTitle] = useState(project.title);
+  const [updatedTitle, setUpdatedTitle] = useState(project.title);
 
-  // useEffect(() => {
-  //   setTitle(project.title);
-  // }, [project]);
+  useEffect(() => {
+    setTitle(project.title);
+    setUpdatedTitle(project.title);
+    getProjectIcon(project.iconLocation);
+  }, [project]);
 
   // const toggleSelected = useCallback((id: string) => {
   //   setSelected((prev) => {
@@ -43,33 +53,70 @@ const ViewProjectItem = ({ path, project }: Props) => {
 
   const handleOpenReadme = useCallback(async () => {
     if (markdown === null && project.markdownLocation) {
-      const text = await window.projectAPI.getFile(project.markdownLocation);
+      const text = await window.projectAPI.getFile(project.markdownLocation, "markdown");
       setMarkdown(text);
     }
   }, [markdown, project]);
 
+  const getProjectIcon = useCallback(async (icon: string) => {
+    if (icon) {
+      const text = await window.projectAPI.getFile(icon, "image");
+      setIcon(text);
+    } else setIcon("");
+  }, []);
+
   const handleOpenPackageJSON = useCallback(async () => {
     if (packageJSON === null) {
-      const text = await window.projectAPI.getFile(path);
-      setPackageJSON(text);
+      const text = await window.projectAPI.getFile(project.packageJsonLocation, "json");
+      setPackageJSON(JSON.stringify(text, null, 4));
     }
-  }, [path]);
+  }, [project]);
 
   const handleUpdateTitle = useCallback(
-    (edit: boolean, title: string) => {
-      if (edit) {
-        setEditTitle(false);
-        window.projectAPI.updateProjectTitle(path, title);
-      } else setEditTitle(true);
+    (title: string) => {
+      setEditTitle(false);
+      window.projectAPI.updateProjectTitle(path, title);
+      setTitle(title);
     },
     [path]
   );
 
   return (
     <Box>
-      <TextInput value={title} onChange={(text) => setTitle(text.target.value)} disabled={!editTitle} m={"md"} />
-      <Button onClick={() => handleUpdateTitle(editTitle, title)}>Edit Title</Button>
-      <Text>{path}</Text>
+      <Flex direction="row" align="center">
+        <Box style={{ position: "relative" }}>
+          {/* <ActionIcon variant="subtle" style={{ position: "absolute", right: 0, bottom: 0 }}>
+            <TbPencil />
+          </ActionIcon> */}
+          <BackgroundImage radius="md" src={icon.length > 0 ? icon : image} w={100} h={100} component="button" />
+        </Box>
+        <Flex direction="column" p="sm">
+          {editTitle ? (
+            <TextInput
+              value={updatedTitle}
+              onChange={(event) => setUpdatedTitle(event.currentTarget.value)}
+              rightSectionPointerEvents="all"
+              rightSection={
+                <ActionIcon variant="subtle">
+                  <TbCheck onClick={() => handleUpdateTitle(updatedTitle)} />
+                </ActionIcon>
+              }
+            />
+          ) : (
+            <Flex direction="row" align="center">
+              <Title order={2}>{title}</Title>
+              <ActionIcon variant="subtle" aria-label="Edit Title" ml="md" onClick={() => setEditTitle((p) => !p)}>
+                <TbPencil />
+              </ActionIcon>
+            </Flex>
+          )}
+          <Divider my="xs" />
+          <Breadcrumbs separator="→">{path.split("\\")}</Breadcrumbs>
+          <Flex>
+            <Text> {Object.keys(project.dependencies).length} dependencies </Text>
+          </Flex>
+        </Flex>
+      </Flex>
       <Tabs defaultValue="dependencies">
         <Tabs.List>
           <Tabs.Tab value="dependencies">Dependencies</Tabs.Tab>
@@ -92,8 +139,8 @@ const ViewProjectItem = ({ path, project }: Props) => {
                 <Table.Th>Packages</Table.Th>
                 <Table.Th>Current</Table.Th>
                 <Table.Th>Wanted</Table.Th>
-                <Table.Th>latest</Table.Th>
-                <Table.Th>Minor</Table.Th>
+                {/* <Table.Th>latest</Table.Th>
+                <Table.Th>Minor</Table.Th> */}
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -102,25 +149,14 @@ const ViewProjectItem = ({ path, project }: Props) => {
                   <Table.Td>{pack}</Table.Td>
                   <Table.Td>{sanitizeVersion(values.currect)}</Table.Td>
                   <Table.Td>{values.wanted || ""}</Table.Td>
-                  <Table.Td>{values.major || ""}</Table.Td>
+                  {/* <Table.Td>{values.major || ""}</Table.Td>
                   <Table.Td>{values.minor || ""}</Table.Td>
-                  <Table.Td>{values.patch || ""}</Table.Td>
+                  <Table.Td>{values.patch || ""}</Table.Td> */}
                 </Table.Tr>
               ))}
             </Table.Tbody>
           </Table>
         </Tabs.Panel>
-        {/*
-        <Tabs.Panel value="devDependencies">
-          {devDependenciesKeys.map((dep) => (
-            <Flex key={`d-${dep}`} my="sm" align="center">
-              <PackageIcon compact={true} pack={dep} />
-              <Text mx="sm" fz="xs">
-                {/* {dep}: {sanitizeVersion(details.devDependencies[dep])} }
-              </Text>
-            </Flex>
-          ))}
-        </Tabs.Panel> */}
         <Tabs.Panel value="scripts">
           {Object.keys(project.scripts).map((script) => (
             <Flex key={`s-${script}`} my="sm" align="center">

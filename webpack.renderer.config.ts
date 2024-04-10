@@ -15,6 +15,14 @@ rules.push(
         loader: "@svgr/webpack",
       },
     ],
+  },
+  {
+    test: /\.(png|jpe?g|gif)$/i,
+    use: [
+      {
+        loader: "file-loader",
+      },
+    ],
   }
 );
 

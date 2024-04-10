@@ -14,5 +14,5 @@ function App() {
   );
 }
 
-const root = createRoot(document.body);
+const root = createRoot(document.getElementById("root"));
 root.render(<App />);

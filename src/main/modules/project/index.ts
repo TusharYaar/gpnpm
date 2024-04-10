@@ -19,7 +19,7 @@ import { getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../..
 
 export const attachListeners = () => {
   ipcMain.on("PROJECT:open-folder-dialog", handleOpenFolderDialog);
-  ipcMain.handle("PROJECT:get-file", (_, file: string) => getFile(file));
+  ipcMain.handle("PROJECT:get-file", (_, file: string, type?: string) => getFile(file, type));
   ipcMain.on("PROJECT:add-new-projects", (_, folders: string[]) => handleAddProjects(folders));
   ipcMain.on("PROJECT:update-title", (_, args: [string, string]) => updateProjectTitle(...args));
   ipcMain.on("PROJECT:update-notification", (_, args: [string, string]) => updateProjectTitle(...args));
@@ -76,7 +76,7 @@ export const searchForFile = async (file: string, path: string) => {
   return projects;
 };
 
-const handleAddProjects = (folders: string[]) => {
+const handleAddProjects = async (folders: string[]) => {
   sendUpdateState("getting_dependencies");
   for (const folder of folders) {
     const title = basename(folder);
@@ -116,7 +116,13 @@ const handleAddProjects = (folders: string[]) => {
       const markdownFile = pathJoin(folder, "README.md");
       markdown = fs.existsSync(markdownFile) ? markdownFile : null;
     }
-    addNewProjectToStorage(folder, title, dependencies, devDependencies, scripts, markdown, json);
+
+    const icon = await searchForFile("icon.png", folder);
+
+    if (icon.length > 0) {
+      console.log(icon);
+      addNewProjectToStorage(folder, title, dependencies, devDependencies, scripts, markdown, json, icon[0]);
+    } else addNewProjectToStorage(folder, title, dependencies, devDependencies, scripts, markdown, json, null);
   }
   sendUpdateState("idle");
   checkForPackageDetails();
@@ -126,8 +132,11 @@ const handleAddProjects = (folders: string[]) => {
 const getFile = (path: string, type?: string) => {
   const exists = fs.existsSync(path);
   if (exists) {
-    const buffer = fs.readFileSync(path, "utf-8");
-    if (type === "json") return JSON.parse(buffer);
+    const buffer = fs.readFileSync(path);
+    if (type === "markdown") return buffer.toString("utf-8");
+    else if (type === "image") return `data:image/png;base64,${buffer.toString("base64")}`;
+    else if (type === "json") return JSON.parse(buffer.toString("utf-8"));
+
     return buffer;
   } else return null;
 };

@@ -32,8 +32,6 @@ const AllProjects = () => {
     if (sortBy === "name_decending") filtered.sort((a, b) => b.title.localeCompare(a.title));
     return filtered;
   }, [store, sortBy, deferredSearch]);
-  console.log(projects);
-
   return (
     <Flex style={{ height: "calc(100vh - 50px)" }} direction="row">
       <ScrollArea style={{ width: "50%" }} p="sm">

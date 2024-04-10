@@ -87,7 +87,8 @@ export const addNewProjectToStorage = (
     [key: string]: string;
   },
   markdownLocation: null | string,
-  packageJsonLocation: null | string
+  packageJsonLocation: null | string,
+  iconLocation: null | string
 ) => {
   const { projects } = getAppSettings();
   const _project: Project = {
@@ -98,7 +99,7 @@ export const addNewProjectToStorage = (
     markdownLocation,
     packageJsonLocation,
     scripts,
-    iconLocation: "",
+    iconLocation,
     notify: false,
   };
   updateAppSettings({ projects: projects.concat(_project) });
@@ -138,12 +139,9 @@ export const updatePackageDetails = (pack: string, details: Package) => {
 };
 
 export const updateProjectDetails = (project: string, details: Partial<Project>) => {
-  if (APP_SETTINGS.projects[project] !== undefined)
-    APP_SETTINGS.projects[project] = {
-      ...APP_SETTINGS.projects[project],
-      ...details,
-    };
-  // updateAppSettings({
-  //   projects,
-  // });
+  const { projects } = getAppSettings();
+  const _projects = projects.map((pro) => (pro.projectLocation === project ? { ...pro, ...details } : pro));
+  updateAppSettings({
+    projects: _projects,
+  });
 };
