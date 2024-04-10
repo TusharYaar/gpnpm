@@ -20,7 +20,7 @@ if (require("electron-squirrel-startup")) {
   // eslint-disable-line global-require
   app.quit();
 }
-app.disableHardwareAcceleration();
+// app.disableHardwareAcceleration();
 
 let mainWindow: BrowserWindow;
 
@@ -83,7 +83,7 @@ export const sendInstruction = <T>(data: { instruction: string; data: T }) => {
 };
 
 export const updateStore = (store: AppSettings) => {
-  if (mainWindow) mainWindow.webContents.send("SYSTEM-update-store", store);
+  if (mainWindow) mainWindow.webContents.send("SYSTEM:update-store", store);
 };
 
 export const throwError = (error: string | object) => {

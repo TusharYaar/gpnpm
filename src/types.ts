@@ -5,18 +5,34 @@ export interface SystemInfo {
 export type SystemUpdateStates = "starting" | "getting-packages" | "getting-package-details" | "";
 
 export type Project = {
+  projectLocation: string;
+  packageJsonLocation: string;
+  markdownLocation: string | null;
+  iconLocation: "";
   title: string;
   notify: boolean;
   scripts: {
     [key: string]: string;
   };
-  dependencies: {
-    [key: string]: string;
-  };
+  dependencies: Record<
+    string,
+    {
+      currect: string;
+      wanted?: string;
+      major?: string;
+      minor?: string;
+      patch?: string;
+    }
+  >;
   devDependencies: {
-    [key: string]: string;
+    [key: string]: {
+      currect: string;
+      wanted?: string;
+      major?: string;
+      minor?: string;
+      patch?: string;
+    };
   };
-  markdownLocation: string | null;
 };
 
 export type Package = {

@@ -4,19 +4,7 @@ import { SystemCurrentStateType, SystemInfo } from "../../types";
 import AddProjectModal from "../components/AddProjectModal";
 import ErrorModal from "../components/ErrorModal";
 
-const initialStore: AppSettings = {
-  projects: {},
-  folders: [],
-  version: "0.01",
-  created: new Date(),
-  modified: new Date(),
-  settings: {
-    theme: "light",
-    platform: "win32",
-  },
-  scannedFolders: [],
-  allPackages: {},
-};
+const initialStore = new AppSettings();
 
 type ContextProps = {
   openFileAddDialog: () => void;
@@ -24,14 +12,14 @@ type ContextProps = {
   // TODO: ADD A TYPE
   systemCurrentState: SystemCurrentStateType;
   store: AppSettings;
-  addFolders: (projects: string[]) => void;
+  addProjects: (projects: string[]) => void;
 };
 
 const AppContext = createContext<ContextProps>({
   openFileAddDialog: () => {
     return;
   },
-  addFolders: (project: string[]) => {
+  addProjects: (project: string[]) => {
     project;
     return;
   },
@@ -61,29 +49,15 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
     setError((prev) => [...prev, { error, id }]);
   }, []);
 
-  const openFileAddDialog = useCallback(async () => {
-    try {
-      const response = await window.projectAPI.openFolderDialog();
-      if (!response.canceled) {
-        if (response.filePaths.length === 0) return console.log("No Projects Found");
-        else setProjectOptions(response.filePaths);
-      }
-    } catch (e) {
-      throwError(e.message || e);
-    }
+  const openFileAddDialog = useCallback(() => {
+    window.projectAPI.openFolderDialog();
   }, []);
 
-  const addFolders = useCallback(async (projects: string[]) => {
+  const addProjects = useCallback(async (projects: string[]) => {
     try {
       setProjectOptions([]);
       if (projects.length === 0) return;
-      const folders = projects.map((p) =>
-        p
-          .split("\\")
-          .filter((t) => t !== "package.json")
-          .join("\\")
-      );
-      window.projectAPI.addFolders(folders);
+      window.projectAPI.addNewProjects(projects);
     } catch (e) {
       setError(e.message || e);
     }
@@ -101,19 +75,20 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
   }, [getSystemInfo]);
 
   useEffect(() => {
-    window.systemAPI.onUpdateCurrentState((_event: any, value: SystemCurrentStateType) => {
+    window.systemAPI.onUpdateCurrentState((_event: unknown, value: SystemCurrentStateType) => {
       setSystemCurrentState(value);
     });
-    window.systemAPI.onError((_event: any, value: string) => throwError(JSON.stringify(value, null, 4)));
-    window.systemAPI.onUpdateStore((_event: any, value: AppSettings) => {
+    window.systemAPI.onError((_event: unknown, value: string) => throwError(JSON.stringify(value, null, 4)));
+    window.systemAPI.onUpdateStore((_event: unknown, value: AppSettings) => {
       console.log("update Store");
       setStore(value);
     });
   }, []);
 
   useEffect(() => {
-    window.systemAPI.onNewInstruction((_event: any, value: { instruction: string; data: unknown }) => {
-      if (value.instruction === "open_add_folder") openFileAddDialog();
+    window.systemAPI.onNewInstruction((_event: unknown, value: { instruction: string; data: unknown }) => {
+      // if (value.instruction === "open_add_folder") openFileAddDialog();
+      if (value.instruction === "select-new-projects") setProjectOptions(value.data as string[]);
     });
   }, []);
 
@@ -122,7 +97,7 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
       value={{
         openFileAddDialog,
         systemInfo,
-        addFolders,
+        addProjects,
         systemCurrentState,
         store,
       }}

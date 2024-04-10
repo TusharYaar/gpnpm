@@ -9,40 +9,39 @@ import { Package, Project } from "../../../types";
 let APP_SETTINGS = new AppSettings();
 
 export const attachListeners = () => {
-  ipcMain.handle("STORAGE:get-store", () => APP_SETTINGS);
+  ipcMain.handle("STORAGE:get-store", getAppSettings);
   console.log("ATTACHED STORAGE");
 };
 
-export const updateAppSettings = async (settings?: AppSettings) => {
-  const modified = new Date();
-  if (settings) {
-    APP_SETTINGS.modified = modified;
-    fs.writeFileSync(APP_SETTINGS_FILE_PATH, JSON.stringify({ ...settings, modified }, null, 4));
-  } else {
-    fs.writeFileSync(APP_SETTINGS_FILE_PATH, JSON.stringify(APP_SETTINGS, null, 4));
+export const updateAppSettings = async (settings: Partial<AppSettings>) => {
+  try {
+    const modified = new Date();
+    if (settings) {
+      const updated = { ...APP_SETTINGS, ...settings, ...modified };
+      fs.writeFileSync(APP_SETTINGS_FILE_PATH, JSON.stringify(updated, null, 4));
+      APP_SETTINGS = { ...updated };
+    } else throw Error("Unable to modify App Settings");
+  } catch (e) {
+    throw Error("Unable to modify App Settings");
+  } finally {
+    updateStore(APP_SETTINGS);
   }
-  if (updateStore) updateStore(APP_SETTINGS);
 };
 
-export const getAppSettings = (readFromFile = false, callback?: () => void) => {
-  if (!readFromFile) return APP_SETTINGS;
-  const settingsExist = fs.existsSync(APP_SETTINGS_FILE_PATH);
-  let settings: AppSettings;
-  if (settingsExist) {
-    const buffer = fs.readFileSync(APP_SETTINGS_FILE_PATH, "utf-8");
-    settings = JSON.parse(buffer.toString()) as AppSettings;
-  } else {
-    settings = new AppSettings();
-    updateAppSettings();
-  }
-  APP_SETTINGS = { ...APP_SETTINGS, ...settings };
-  if (callback) callback();
-};
-
-export const addNewFoldersToStorage = (folders: string[]) => {
-  const unique = new Set([...APP_SETTINGS.folders, ...folders]);
-  APP_SETTINGS.folders = Array.from(unique);
-  updateAppSettings();
+export const getAppSettings = (): AppSettings => {
+  if (APP_SETTINGS.isInitialValue) {
+    let settings: AppSettings;
+    const settingsExist = fs.existsSync(APP_SETTINGS_FILE_PATH);
+    if (settingsExist) {
+      const buffer = fs.readFileSync(APP_SETTINGS_FILE_PATH, "utf-8");
+      settings = JSON.parse(buffer.toString()) as AppSettings;
+    } else {
+      settings = new AppSettings();
+      settings.isInitialValue = false;
+      updateAppSettings(settings);
+    }
+    return settings;
+  } else return APP_SETTINGS;
 };
 
 export const addNewPackages = (packages: { [key: string]: string }, file: string) => {
@@ -70,49 +69,39 @@ export const addNewPackages = (packages: { [key: string]: string }, file: string
   } catch (e) {
     throwError(e);
   }
-  updateAppSettings();
 };
 
-export const addScannedFoldersToStorage = (folders: string[]) => {
+export const addScanFoldersToStorage = (folders: string[]) => {
   const unique = new Set(folders);
-
-  if (APP_SETTINGS.scannedFolders)
-    for (const folder in APP_SETTINGS.scannedFolders) unique.add(APP_SETTINGS.scannedFolders[folder]);
-  APP_SETTINGS.scannedFolders = Array.from(unique);
-  updateAppSettings();
+  if (APP_SETTINGS.scanFolders)
+    for (const folder in APP_SETTINGS.scanFolders) unique.add(APP_SETTINGS.scanFolders[folder]);
+  updateAppSettings({ scanFolders: Array.from(unique) });
 };
 
 export const addNewProjectToStorage = (
   project: string,
   title = "",
-  dependencies: {
-    [key: string]: string;
-  },
-  devDependencies: {
-    [key: string]: string;
-  },
+  dependencies: Project["dependencies"],
+  devDependencies: Project["dependencies"],
   scripts: {
     [key: string]: string;
   },
-  markdownLocation: null | string
+  markdownLocation: null | string,
+  packageJsonLocation: null | string
 ) => {
-  if (APP_SETTINGS.projects[project]) {
-    APP_SETTINGS.projects[project] = {
-      ...APP_SETTINGS.projects[project],
-      dependencies,
-      devDependencies,
-      markdownLocation,
-    };
-  } else {
-    APP_SETTINGS.projects[project] = {
-      title,
-      notify: true,
-      scripts: scripts,
-      dependencies,
-      devDependencies,
-      markdownLocation,
-    };
-  }
+  const { projects } = getAppSettings();
+  const _project: Project = {
+    projectLocation: project,
+    title,
+    dependencies,
+    devDependencies,
+    markdownLocation,
+    packageJsonLocation,
+    scripts,
+    iconLocation: "",
+    notify: false,
+  };
+  updateAppSettings({ projects: projects.concat(_project) });
 };
 
 export const addPackageNPMDetails = (pack: string, details: Package["npm"]) => {
@@ -130,7 +119,7 @@ export const addPackageNPMDetails = (pack: string, details: Package["npm"]) => {
     };
 };
 
-export const updatePackageUsedInDetails = (pack: string, details: Package["usedIn"], shouldUpdateStore = false) => {
+export const updatePackageUsedInDetails = (pack: string, details: Package["usedIn"]) => {
   if (APP_SETTINGS.allPackages[pack])
     APP_SETTINGS.allPackages[pack] = {
       ...APP_SETTINGS.allPackages[pack],
@@ -142,15 +131,11 @@ export const updatePackageUsedInDetails = (pack: string, details: Package["usedI
       usedIn: details,
       npm: null,
     };
-  if (shouldUpdateStore) updateAppSettings();
 };
 
-export const updatePackageDetails = (pack: string, details: Package, shouldUpdateStore = false) => {
+export const updatePackageDetails = (pack: string, details: Package) => {
   APP_SETTINGS.allPackages[pack] = details;
-  if (shouldUpdateStore) updateAppSettings();
 };
-
-getAppSettings(true);
 
 export const updateProjectDetails = (project: string, details: Partial<Project>) => {
   if (APP_SETTINGS.projects[project] !== undefined)
@@ -158,5 +143,7 @@ export const updateProjectDetails = (project: string, details: Partial<Project>)
       ...APP_SETTINGS.projects[project],
       ...details,
     };
-  updateAppSettings();
+  // updateAppSettings({
+  //   projects,
+  // });
 };

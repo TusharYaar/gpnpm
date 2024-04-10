@@ -1,40 +1,33 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Code, Flex, Tabs, Text, Box, TextInput, Button } from "@mantine/core";
+import React, { useCallback, useState } from "react";
+import { Code, Flex, Tabs, Text, Box, TextInput, Button, Table } from "@mantine/core";
 
 import { Project } from "../../types";
-import PackageIcon from "./PackageIcon";
-import { sanitizeVersion } from "../../utils/functions";
-import { useApp } from "../context/AppContext";
+// import PackageIcon from "./PackageIcon";
+// import { sanitizeVersion } from "../../utils/functions";
+// import { useApp } from "../context/AppContext";
 import { Remark } from "react-remark";
-import DepedencyItem from "./DependencyItem";
+import { sanitizeVersion } from "../../utils/functions";
+// import DepedencyItem from "./DependencyItem";
 
 type Props = {
   path: string;
-  details: Project;
+  project: Project;
 };
 
-const ViewProjectItem = ({ path, details }: Props) => {
-  const {
-    store: { allPackages },
-  } = useApp();
+const ViewProjectItem = ({ path, project }: Props) => {
+  // const {
+  //   store: { allPackages },
+  // } = useApp();
   const [markdown, setMarkdown] = useState<null | string>(null);
   const [packageJSON, setPackageJSON] = useState<null | string>(null);
   // const [selected, setSelected] = useState([]);
   const [editTitle, setEditTitle] = useState(false);
 
-  const [title, setTitle] = useState(details.title);
+  const [title, setTitle] = useState(project.title);
 
-  useEffect(() => {
-    setTitle(details.title);
-  }, [details]);
-
-  const dependenciesKeys = useMemo(() => {
-    return Object.keys(details.dependencies);
-  }, [details]);
-
-  const devDependenciesKeys = useMemo(() => {
-    return Object.keys(details.devDependencies);
-  }, [details]);
+  // useEffect(() => {
+  //   setTitle(project.title);
+  // }, [project]);
 
   // const toggleSelected = useCallback((id: string) => {
   //   setSelected((prev) => {
@@ -49,11 +42,11 @@ const ViewProjectItem = ({ path, details }: Props) => {
   }, []);
 
   const handleOpenReadme = useCallback(async () => {
-    if (markdown === null && details.markdownLocation) {
-      const text = await window.projectAPI.getFile(details.markdownLocation);
+    if (markdown === null && project.markdownLocation) {
+      const text = await window.projectAPI.getFile(project.markdownLocation);
       setMarkdown(text);
     }
-  }, [markdown, details]);
+  }, [markdown, project]);
 
   const handleOpenPackageJSON = useCallback(async () => {
     if (packageJSON === null) {
@@ -79,9 +72,8 @@ const ViewProjectItem = ({ path, details }: Props) => {
       <Text>{path}</Text>
       <Tabs defaultValue="dependencies">
         <Tabs.List>
-          {dependenciesKeys.length > 0 && <Tabs.Tab value="dependencies">Dependencies</Tabs.Tab>}
-          {devDependenciesKeys.length > 0 && <Tabs.Tab value="devDependencies"> Dev Dependencies </Tabs.Tab>}
-          {details.markdownLocation && (
+          <Tabs.Tab value="dependencies">Dependencies</Tabs.Tab>
+          {project.markdownLocation && (
             <Tabs.Tab value="markdown" onClick={handleOpenReadme}>
               README.md
             </Tabs.Tab>
@@ -94,25 +86,46 @@ const ViewProjectItem = ({ path, details }: Props) => {
         </Tabs.List>
 
         <Tabs.Panel value="dependencies">
-          {dependenciesKeys.map((dep) => (
-            <DepedencyItem key={dep} dependency={dep} details={allPackages[dep]} project={path} />
-          ))}
+          <Table striped withTableBorder>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Packages</Table.Th>
+                <Table.Th>Current</Table.Th>
+                <Table.Th>Wanted</Table.Th>
+                <Table.Th>latest</Table.Th>
+                <Table.Th>Minor</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {Object.entries(project.dependencies).map(([pack, values]) => (
+                <Table.Tr key={pack}>
+                  <Table.Td>{pack}</Table.Td>
+                  <Table.Td>{sanitizeVersion(values.currect)}</Table.Td>
+                  <Table.Td>{values.wanted || ""}</Table.Td>
+                  <Table.Td>{values.major || ""}</Table.Td>
+                  <Table.Td>{values.minor || ""}</Table.Td>
+                  <Table.Td>{values.patch || ""}</Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
         </Tabs.Panel>
+        {/*
         <Tabs.Panel value="devDependencies">
           {devDependenciesKeys.map((dep) => (
             <Flex key={`d-${dep}`} my="sm" align="center">
               <PackageIcon compact={true} pack={dep} />
               <Text mx="sm" fz="xs">
-                {dep}: {sanitizeVersion(details.devDependencies[dep])}
+                {/* {dep}: {sanitizeVersion(details.devDependencies[dep])} }
               </Text>
             </Flex>
           ))}
-        </Tabs.Panel>
+        </Tabs.Panel> */}
         <Tabs.Panel value="scripts">
-          {Object.keys(details.scripts).map((script) => (
+          {Object.keys(project.scripts).map((script) => (
             <Flex key={`s-${script}`} my="sm" align="center">
               <Text mx="sm" fz="xs">
-                {script} - {details.scripts[script]}
+                {script} - {project.scripts[script]}
               </Text>
             </Flex>
           ))}
@@ -142,7 +155,7 @@ const ViewProjectItem = ({ path, details }: Props) => {
           </div>
         </Tabs.Panel>
         <Tabs.Panel value="raw">
-          <Code>{JSON.stringify(details, null, 2)}</Code>
+          <Code>{JSON.stringify(project, null, 2)}</Code>
         </Tabs.Panel>
       </Tabs>
     </Box>

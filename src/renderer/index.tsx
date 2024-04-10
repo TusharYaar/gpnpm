@@ -6,11 +6,11 @@ import { MantineProvider } from "@mantine/core";
 
 function App() {
   return (
-    <AppProvider>
-      <MantineProvider>
+    <MantineProvider>
+      <AppProvider>
         <AppContainer />
-      </MantineProvider>
-    </AppProvider>
+      </AppProvider>
+    </MantineProvider>
   );
 }
 

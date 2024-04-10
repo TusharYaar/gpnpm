@@ -8,14 +8,14 @@ type Props = {
 
 const AddProjectModal = ({ projects }: Props) => {
   const [selected, setSelected] = useState(Array(projects.length).fill(true));
-  const { addFolders } = useApp();
+  const { addProjects } = useApp();
 
   const toggleCheckbox = useCallback((index: number) => {
     setSelected((prev) => prev.map((c, i) => (i === index ? !c : c)));
   }, []);
 
   const handleAddFolders = useCallback(async (_projects: string[], select: boolean[]) => {
-    addFolders(_projects.filter((f, i) => select[i]));
+    addProjects(_projects.filter((f, i) => select[i]));
   }, []);
 
   return (
@@ -28,7 +28,7 @@ const AddProjectModal = ({ projects }: Props) => {
       {projects.map((project, index) => (
         <Flex key={index} justify="flex-start" align="center" gap="sm">
           <Checkbox checked={selected[index]} onChange={() => toggleCheckbox(index)} />
-          <Breadcrumbs separator="→">{project.split("\\").filter((t) => t !== "package.json")}</Breadcrumbs>
+          <Breadcrumbs separator="→">{project.split("\\")}</Breadcrumbs>
         </Flex>
       ))}
       <Button onClick={() => handleAddFolders(projects, selected)}>Add Selected Projects</Button>

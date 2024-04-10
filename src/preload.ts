@@ -3,11 +3,13 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("projectAPI", {
-  openFolderDialog: () => ipcRenderer.invoke("PROJECT:open-folder-dialog"),
-  addFolders: (folders: string[]) => ipcRenderer.send("PROJECT:add-folders", folders),
+  openFolderDialog: () => ipcRenderer.send("PROJECT:open-folder-dialog"),
+  // addFolders: (folders: string[]) => ipcRenderer.send("PROJECT:add-folders", folders),
   getFile: (file: string) => ipcRenderer.invoke("PROJECT:get-file", file),
   updateProjectTitle: (project: string, title: string) => ipcRenderer.send("PROJECT:update-title", [project, title]),
   updateProjectNotification: (project: string) => ipcRenderer.send("PROJECT:update-title", project),
+  // onSelectNewProjects: (callback: () => void) => ipcRenderer.on("PROJECT:select-new-projects", callback),
+  addNewProjects: (projects: string[]) => ipcRenderer.send("PROJECT:add-new-projects", projects),
 });
 
 contextBridge.exposeInMainWorld("systemAPI", {
@@ -18,5 +20,5 @@ contextBridge.exposeInMainWorld("systemAPI", {
   onUpdateCurrentState: (callback: () => void) => ipcRenderer.on("SYSTEM:update-current-state", callback),
   onNewInstruction: (callback: () => void) => ipcRenderer.on("SYSTEM:instruction", callback),
   onError: (callback: () => void) => ipcRenderer.on("SYSTEM:error", callback),
-  onUpdateStore: (callback: () => void) => ipcRenderer.on("SYSTEM-update-store", callback),
+  onUpdateStore: (callback: () => void) => ipcRenderer.on("SYSTEM:update-store", callback),
 });

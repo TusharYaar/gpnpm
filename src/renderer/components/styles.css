@@ -1,0 +1,7 @@
+.listItem.selected {
+    background-color: var(--mantine-color-gray-1);
+}
+.listItem:hover {
+    cursor: pointer;
+    background-color: var(--mantine-color-gray-1);
+}
