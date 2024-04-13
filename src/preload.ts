@@ -1,15 +1,15 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 import { contextBridge, ipcRenderer } from "electron";
+import { Project } from "./types";
 
 contextBridge.exposeInMainWorld("projectAPI", {
-  openFolderDialog: () => ipcRenderer.send("PROJECT:open-folder-dialog"),
-  // addFolders: (folders: string[]) => ipcRenderer.send("PROJECT:add-folders", folders),
+  openDialog: (file: "file" | "directory", allowMultiple: boolean) =>
+    ipcRenderer.invoke("PROJECT:open-dialog", file, allowMultiple),
   getFile: (file: string, type?: string) => ipcRenderer.invoke("PROJECT:get-file", file, type),
-  updateProjectTitle: (project: string, title: string) => ipcRenderer.send("PROJECT:update-title", [project, title]),
-  updateProjectNotification: (project: string) => ipcRenderer.send("PROJECT:update-title", project),
-  // onSelectNewProjects: (callback: () => void) => ipcRenderer.on("PROJECT:select-new-projects", callback),
+  updateProject: (project: string, updates: Partial<Project>) => ipcRenderer.send("PROJECT:update", project, updates),
   addNewProjects: (projects: string[]) => ipcRenderer.send("PROJECT:add-new-projects", projects),
+  scanFoldersForProjects: (folders: string[]) => ipcRenderer.send("PROJECT:scan-folders-for-projects", folders),
 });
 
 contextBridge.exposeInMainWorld("systemAPI", {

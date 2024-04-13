@@ -1,23 +1,11 @@
 import { useCallback, useState, useEffect } from "react";
-import {
-  Code,
-  Flex,
-  Tabs,
-  Text,
-  Box,
-  Table,
-  Breadcrumbs,
-  Title,
-  Divider,
-  ActionIcon,
-  BackgroundImage,
-  TextInput,
-} from "@mantine/core";
-import { TbPencil, TbCheck } from "react-icons/tb";
+import { Code, Flex, Tabs, Text, Box, Table, Breadcrumbs, Title, Divider, Image, Group, Button } from "@mantine/core";
+import { TbPencil, TbBell, TbBellRingingFilled, TbBucket } from "react-icons/tb";
 import { Project } from "../../types";
 import { Remark } from "react-remark";
 import { sanitizeVersion } from "../../utils/functions";
 import image from "../assets/bg-9.png";
+import EditProjectModal from "./EditProjectModal";
 
 type Props = {
   path: string;
@@ -29,13 +17,9 @@ const ViewProjectItem = ({ path, project }: Props) => {
   const [icon, setIcon] = useState("");
   const [packageJSON, setPackageJSON] = useState<null | string>(null);
   // const [selected, setSelected] = useState([]);
-  const [editTitle, setEditTitle] = useState(false);
-  const [title, setTitle] = useState(project.title);
-  const [updatedTitle, setUpdatedTitle] = useState(project.title);
+  const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
-    setTitle(project.title);
-    setUpdatedTitle(project.title);
     getProjectIcon(project.iconLocation);
   }, [project]);
 
@@ -72,44 +56,45 @@ const ViewProjectItem = ({ path, project }: Props) => {
     }
   }, [project]);
 
-  const handleUpdateTitle = useCallback(
-    (title: string) => {
-      setEditTitle(false);
-      window.projectAPI.updateProjectTitle(path, title);
-      setTitle(title);
+  const handleProjectUpdate = useCallback(
+    (update: Partial<Project>) => {
+      window.projectAPI.updateProject(path, update);
     },
     [path]
   );
+  const handleToggleNotify = useCallback(() => {
+    window.projectAPI.updateProject(path, { notify: !project.notify });
+  }, [project]);
 
   return (
     <Box>
+      {showEdit && (
+        <EditProjectModal project={project} onDismiss={() => setShowEdit(false)} onEditDetails={handleProjectUpdate} />
+      )}
       <Flex direction="row" align="center">
-        <Box style={{ position: "relative" }}>
-          {/* <ActionIcon variant="subtle" style={{ position: "absolute", right: 0, bottom: 0 }}>
-            <TbPencil />
-          </ActionIcon> */}
-          <BackgroundImage radius="md" src={icon.length > 0 ? icon : image} w={100} h={100} component="button" />
-        </Box>
-        <Flex direction="column" p="sm">
-          {editTitle ? (
-            <TextInput
-              value={updatedTitle}
-              onChange={(event) => setUpdatedTitle(event.currentTarget.value)}
-              rightSectionPointerEvents="all"
-              rightSection={
-                <ActionIcon variant="subtle">
-                  <TbCheck onClick={() => handleUpdateTitle(updatedTitle)} />
-                </ActionIcon>
-              }
-            />
-          ) : (
-            <Flex direction="row" align="center">
-              <Title order={2}>{title}</Title>
-              <ActionIcon variant="subtle" aria-label="Edit Title" ml="md" onClick={() => setEditTitle((p) => !p)}>
-                <TbPencil />
-              </ActionIcon>
-            </Flex>
-          )}
+        <Image radius="md" src={icon.length > 0 ? icon : image} w={100} h={100} />
+        <Flex direction="column" p="sm" flex={1}>
+          <Flex justify="space-between" flex={1}>
+            <Title order={2}>{project.title}</Title>
+            <Group gap={2}>
+              <Button size="compact-xs" variant="subtle" leftSection={<TbPencil />} onClick={() => setShowEdit(true)}>
+                Edit
+              </Button>
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                leftSection={project.notify ? <TbBellRingingFilled /> : <TbBell />}
+                color={project.notify ? "yellow" : "gray"}
+                onClick={handleToggleNotify}
+              >
+                Notify
+              </Button>
+              <Button size="compact-xs" variant="subtle" color="red" leftSection={<TbBucket />}>
+                Delete
+              </Button>
+            </Group>
+          </Flex>
+
           <Divider my="xs" />
           <Breadcrumbs separator="→">{path.split("\\")}</Breadcrumbs>
           <Flex>
@@ -139,8 +124,6 @@ const ViewProjectItem = ({ path, project }: Props) => {
                 <Table.Th>Packages</Table.Th>
                 <Table.Th>Current</Table.Th>
                 <Table.Th>Wanted</Table.Th>
-                {/* <Table.Th>latest</Table.Th>
-                <Table.Th>Minor</Table.Th> */}
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -149,9 +132,6 @@ const ViewProjectItem = ({ path, project }: Props) => {
                   <Table.Td>{pack}</Table.Td>
                   <Table.Td>{sanitizeVersion(values.currect)}</Table.Td>
                   <Table.Td>{values.wanted || ""}</Table.Td>
-                  {/* <Table.Td>{values.major || ""}</Table.Td>
-                  <Table.Td>{values.minor || ""}</Table.Td>
-                  <Table.Td>{values.patch || ""}</Table.Td> */}
                 </Table.Tr>
               ))}
             </Table.Tbody>

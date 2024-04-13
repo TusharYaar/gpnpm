@@ -2,10 +2,11 @@ import AppSettings from "./main/modules/storage/AppSettings";
 import { SystemInfo } from "./types";
 
 export interface projectAPI {
-  openFolderDialog: () => void;
+  openDialog: (type: "file" | "directory", allowMultiple?: boolean) => Promise<string[]>;
   getFile: (file: string, type?: string) => Promise<string>;
-  updateProjectTitle: (project: string, title: string) => void;
+  updateProject: (project: string, update: Partial<Project>) => void;
   addNewProjects: (projects: string[]) => void;
+  scanFoldersForProjects: (folders: string[]) => void;
 }
 
 export interface systemAPI {

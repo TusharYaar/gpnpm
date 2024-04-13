@@ -11,6 +11,7 @@ export type Project = {
   iconLocation: string | null;
   title: string;
   notify: boolean;
+  description: string;
   scripts: {
     [key: string]: string;
   };

@@ -101,6 +101,7 @@ export const addNewProjectToStorage = (
     scripts,
     iconLocation,
     notify: false,
+    description: "",
   };
   updateAppSettings({ projects: projects.concat(_project) });
 };
@@ -140,6 +141,7 @@ export const updatePackageDetails = (pack: string, details: Package) => {
 
 export const updateProjectDetails = (project: string, details: Partial<Project>) => {
   const { projects } = getAppSettings();
+  console.log(details);
   const _projects = projects.map((pro) => (pro.projectLocation === project ? { ...pro, ...details } : pro));
   updateAppSettings({
     projects: _projects,

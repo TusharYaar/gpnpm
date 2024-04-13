@@ -18,28 +18,29 @@ import { NPMRegistryPackageResponse, Package, Project } from "../../../types";
 import { getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../../utils/functions";
 
 export const attachListeners = () => {
-  ipcMain.on("PROJECT:open-folder-dialog", handleOpenFolderDialog);
+  ipcMain.handle("PROJECT:open-dialog", (_, type: "file" | "directory", allowMultiple: boolean) =>
+    handleOpenDialog(type, allowMultiple)
+  );
   ipcMain.handle("PROJECT:get-file", (_, file: string, type?: string) => getFile(file, type));
+  ipcMain.on("PROJECT:scan-folders-for-projects", (_, folders: string[]) => scanFolderForProjects(folders));
   ipcMain.on("PROJECT:add-new-projects", (_, folders: string[]) => handleAddProjects(folders));
-  ipcMain.on("PROJECT:update-title", (_, args: [string, string]) => updateProjectTitle(...args));
-  ipcMain.on("PROJECT:update-notification", (_, args: [string, string]) => updateProjectTitle(...args));
+  ipcMain.on("PROJECT:update", (_, project: string, updates: Partial<Project>) =>
+    updateProjectDetails(project, updates)
+  );
   console.log("ATTACHED PROJECTS");
 };
 
-const handleOpenFolderDialog = async () => {
+const handleOpenDialog = async (type: "file" | "directory", allowMultiple = false) => {
   //
+  const properties = [];
+  properties.push(type === "file" ? "openFile" : "openDirectory");
+  console.log(properties);
+  if (allowMultiple) properties.push("multiSelections");
   try {
     sendUpdateState("wait_for_choose_folders");
-    const result = await dialog.showOpenDialog({ properties: ["openDirectory", "multiSelections"] });
-    if (result.canceled || result.filePaths.length === 0) {
-      sendUpdateState("idle");
-      return result;
-    }
-    addScanFoldersToStorage(result.filePaths);
-    sendUpdateState("searching_for_projects");
-    for (const _path of result.filePaths) {
-      await scanFolderForProjects(_path);
-    }
+    const result = await dialog.showOpenDialog({ properties });
+    sendUpdateState("idle");
+    return result.filePaths;
   } catch (e) {
     throwError(e);
   } finally {
@@ -47,15 +48,20 @@ const handleOpenFolderDialog = async () => {
   }
 };
 
-export const scanFolderForProjects = async (folder: string) => {
+export const scanFolderForProjects = async (folders: string[]) => {
+  addScanFoldersToStorage(folders);
+  sendUpdateState("searching_for_projects");
   try {
-    let projects = await searchForFile("package.json", folder);
-    projects = projects.map((pro) => dirname(pro));
-    console.log(projects);
-    sendInstruction({ instruction: "select-new-projects", data: projects });
+    for (const folder of folders) {
+      let projects = await searchForFile("package.json", folder);
+      projects = projects.map((pro) => dirname(pro));
+      sendInstruction({ instruction: "select-new-projects", data: projects });
+    }
   } catch (e) {
     console.log(e);
     throw e;
+  } finally {
+    sendUpdateState("idle");
   }
 };
 

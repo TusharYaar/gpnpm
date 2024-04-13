@@ -4,12 +4,12 @@ import { TbFolderPlus, TbHome, TbSourceCode, TbSettings, TbPackages, TbDeviceDes
 import { Link } from "react-router-dom";
 
 const Menubar = () => {
-  const { openFileAddDialog } = useApp();
+  const { handleAddScanFolder } = useApp();
   return (
     <Flex justify="space-between" direction="column" align="center" flex="1">
       <div>
         <Tooltip label="Add New Folder" position="right">
-          <ActionIcon onClick={openFileAddDialog} size={40} variant="transparent">
+          <ActionIcon size={40} variant="transparent" onClick={handleAddScanFolder}>
             <TbFolderPlus size={24} />
           </ActionIcon>
         </Tooltip>

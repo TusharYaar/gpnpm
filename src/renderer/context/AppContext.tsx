@@ -7,22 +7,22 @@ import ErrorModal from "../components/ErrorModal";
 const initialStore = new AppSettings();
 
 type ContextProps = {
-  openFileAddDialog: () => void;
+  openDialog: (type: "file" | "directory", allowMultiple: boolean) => Promise<string[]>;
   systemInfo: SystemInfo | null;
   // TODO: ADD A TYPE
   systemCurrentState: SystemCurrentStateType;
   store: AppSettings;
+  handleAddScanFolder: () => void;
   addProjects: (projects: string[]) => void;
 };
 
 const AppContext = createContext<ContextProps>({
-  openFileAddDialog: () => {
-    return;
-  },
+  openDialog: () => Promise.resolve([]),
   addProjects: (project: string[]) => {
     project;
     return;
   },
+  handleAddScanFolder: () => {},
   systemInfo: null,
   systemCurrentState: null,
   store: initialStore,
@@ -49,8 +49,8 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
     setError((prev) => [...prev, { error, id }]);
   }, []);
 
-  const openFileAddDialog = useCallback(() => {
-    window.projectAPI.openFolderDialog();
+  const openDialog = useCallback(async (type: "file" | "directory", allowMultiple = false) => {
+    return window.projectAPI.openDialog(type, allowMultiple);
   }, []);
 
   const addProjects = useCallback(async (projects: string[]) => {
@@ -70,6 +70,16 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
     setSystemInfo(response);
   }, []);
 
+  const handleAddScanFolder = useCallback(async () => {
+    try {
+      const folders = await window.projectAPI.openDialog("directory", true);
+      if (folders.length > 0) window.projectAPI.scanFoldersForProjects(folders);
+    } catch (e) {
+      console.log(e);
+      // setError({error: `${e}`})
+    }
+  }, []);
+
   useEffect(() => {
     getSystemInfo();
   }, [getSystemInfo]);
@@ -80,7 +90,6 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
     });
     window.systemAPI.onError((_event: unknown, value: string) => throwError(JSON.stringify(value, null, 4)));
     window.systemAPI.onUpdateStore((_event: unknown, value: AppSettings) => {
-      console.log("update Store");
       setStore(value);
     });
   }, []);
@@ -95,10 +104,11 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
   return (
     <AppContext.Provider
       value={{
-        openFileAddDialog,
+        openDialog,
         systemInfo,
         addProjects,
         systemCurrentState,
+        handleAddScanFolder,
         store,
       }}
     >

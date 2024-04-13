@@ -5,3 +5,10 @@
     cursor: pointer;
     background-color: var(--mantine-color-gray-1);
 }
+
+.visibleOnHover {
+    opacity: 0;
+}
+.visibleOnHover:hover {
+    opacity: 1;
+}

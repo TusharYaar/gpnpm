@@ -1,9 +1,7 @@
 import { Button, Box, Flex, Menu, ScrollArea, TextInput, Title } from "@mantine/core";
 import { useDeferredValue, useMemo, useState } from "react";
-// import ProjectItem from "../components/ProjectItem";
 import ViewProjectItem from "../components/ViewProjectItem";
 import { useApp } from "../context/AppContext";
-import { Project } from "../../types";
 import ListItem from "../components/ListItem";
 const sortOptions = {
   name_ascending: {
@@ -20,7 +18,7 @@ const AllProjects = () => {
   const deferredSearch = useDeferredValue(search);
   const [sortBy, setSortBy] = useState<keyof typeof sortOptions>("name_ascending");
 
-  const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [activeProject, setActiveProject] = useState<string | null>(null);
 
   const projects = useMemo(() => {
     if (!store.projects) return [];
@@ -61,18 +59,20 @@ const AllProjects = () => {
             </Menu.Dropdown>
           </Menu>
         </Flex>
-        {projects.map((project) => (
+        {projects.map((project, index) => (
           <ListItem
-            key={project.title}
+            key={`${project.title}_${index}`}
             title={project.title}
-            selected={activeProject !== null && activeProject.title === project.title}
+            selected={activeProject !== null && activeProject === project.projectLocation}
             // path={project.projectLocation}
-            onClick={() => setActiveProject(project)}
+            onClick={() => setActiveProject(project.projectLocation)}
           />
         ))}
       </ScrollArea>
       <ScrollArea style={{ width: "100%" }}>
-        {activeProject !== null && <ViewProjectItem project={activeProject} path={activeProject.projectLocation} />}
+        {activeProject !== null && (
+          <ViewProjectItem project={projects.find((p) => p.projectLocation === activeProject)} path={activeProject} />
+        )}
       </ScrollArea>
     </Flex>
   );
