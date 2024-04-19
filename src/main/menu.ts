@@ -80,7 +80,7 @@ const template: Electron.MenuItemConstructorOptions[] = [
       {
         id: "check_package_updates",
         label: "Check Package Updates",
-        click: () => checkForPackageDetails(true),
+        click: () => checkForPackageDetails(),
       },
       {
         id: "check_for_updates",

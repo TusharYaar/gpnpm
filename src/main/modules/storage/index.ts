@@ -1,25 +1,28 @@
 import fs from "fs";
 import AppSettings from "./AppSettings";
+import { join } from "path";
 
-import { APP_SETTINGS_FILE_PATH } from "../../utils/constants";
+import { APP_SETTINGS_FILE_NAME } from "../../../utils/constants";
 import { throwError, updateStore } from "../../index";
-import { ipcMain } from "electron";
+import { ipcMain, app } from "electron";
 import { Package, Project } from "../../../types";
 
+export const APP_SETTINGS_FILE_PATH = join(app.getPath("appData"), "gpnpm", APP_SETTINGS_FILE_NAME);
 let APP_SETTINGS = new AppSettings();
 
 export const attachListeners = () => {
   ipcMain.handle("STORAGE:get-store", getAppSettings);
   console.log("ATTACHED STORAGE");
+  getAppSettings();
 };
 
 export const updateAppSettings = async (settings: Partial<AppSettings>) => {
   try {
     const modified = new Date();
     if (settings) {
-      const updated = { ...APP_SETTINGS, ...settings, ...modified };
+      const updated = { ...APP_SETTINGS, ...settings, modified };
       fs.writeFileSync(APP_SETTINGS_FILE_PATH, JSON.stringify(updated, null, 4));
-      APP_SETTINGS = { ...updated };
+      APP_SETTINGS = updated;
     } else throw Error("Unable to modify App Settings");
   } catch (e) {
     throw Error("Unable to modify App Settings");
@@ -38,34 +41,38 @@ export const getAppSettings = (): AppSettings => {
     } else {
       settings = new AppSettings();
       settings.isInitialValue = false;
-      updateAppSettings(settings);
     }
+    APP_SETTINGS = settings;
     return settings;
   } else return APP_SETTINGS;
 };
 
-export const addNewPackages = (packages: { [key: string]: string }, file: string) => {
+export const addNewPackages = (packages: Record<string, string>, project: string, packageJsonLocation: string) => {
   try {
-    for (const [key, value] of Object.entries(packages)) {
-      if (APP_SETTINGS.allPackages[key]) {
-        if (APP_SETTINGS.allPackages[key].usedIn[file]) {
-          APP_SETTINGS.allPackages[key].usedIn[file] = {
-            ...APP_SETTINGS.allPackages[key].usedIn[file],
-            version: value,
-          };
-        } else {
-          APP_SETTINGS.allPackages[key].usedIn[file] = {
-            version: value,
-            updates: null,
-          };
-        }
-      } else
-        APP_SETTINGS.allPackages[key] = {
-          usedIn: { [file]: { version: value, updates: null } },
-          npm: null,
-          latest: null,
+    const { allPackages } = getAppSettings();
+    for (const [key, version] of Object.entries(packages)) {
+      if (allPackages[key]) {
+        allPackages[key] = {
+          ...allPackages[key],
+          usedIn: allPackages[key].usedIn.concat({
+            project,
+            packageJsonLocation,
+            version,
+          }),
         };
+      } else {
+        allPackages[key] = {
+          usedIn: [
+            {
+              project,
+              packageJsonLocation,
+              version,
+            },
+          ],
+        };
+      }
     }
+    updateAppSettings({ allPackages });
   } catch (e) {
     throwError(e);
   }
@@ -92,6 +99,7 @@ export const addNewProjectToStorage = (
 ) => {
   const { projects } = getAppSettings();
   const _project: Project = {
+    lastCheckForUpdates: null,
     projectLocation: project,
     title,
     dependencies,
@@ -106,42 +114,36 @@ export const addNewProjectToStorage = (
   updateAppSettings({ projects: projects.concat(_project) });
 };
 
-export const addPackageNPMDetails = (pack: string, details: Package["npm"]) => {
-  if (APP_SETTINGS.allPackages[pack]) {
-    APP_SETTINGS.allPackages[pack] = {
-      ...APP_SETTINGS.allPackages[pack],
-      npm: details,
-      latest: details.versions[details.versions.length - 1],
+export const addPackagesNPMDetails = (packages: Package["npm"][]) => {
+  const { allPackages } = getAppSettings();
+
+  // if (allPackages[details.name]) {
+  for (const pack of packages) {
+    allPackages[pack.name] = {
+      ...allPackages[pack.name],
+      npm: pack,
+      latest: pack.versions[pack.versions.length - 1],
     };
-  } else
-    APP_SETTINGS.allPackages[pack] = {
-      usedIn: {},
-      npm: details,
-      latest: details.versions[details.versions.length - 1],
-    };
+  }
+  updateAppSettings({ allPackages });
 };
 
-export const updatePackageUsedInDetails = (pack: string, details: Package["usedIn"]) => {
-  if (APP_SETTINGS.allPackages[pack])
-    APP_SETTINGS.allPackages[pack] = {
-      ...APP_SETTINGS.allPackages[pack],
-      usedIn: details,
-    };
-  else
-    APP_SETTINGS.allPackages[pack] = {
-      latest: null,
-      usedIn: details,
-      npm: null,
-    };
-};
-
-export const updatePackageDetails = (pack: string, details: Package) => {
-  APP_SETTINGS.allPackages[pack] = details;
-};
+// export const updatePackageUsedInDetails = (pack: string, details: Package["usedIn"]) => {
+// if (APP_SETTINGS.allPackages[pack])
+//   APP_SETTINGS.allPackages[pack] = {
+//     ...APP_SETTINGS.allPackages[pack],
+//     usedIn: details,
+//   };
+// else
+//   APP_SETTINGS.allPackages[pack] = {
+//     latest: null,
+//     usedIn: details,
+//     npm: null,
+//   };
+// };
 
 export const updateProjectDetails = (project: string, details: Partial<Project>) => {
   const { projects } = getAppSettings();
-  console.log(details);
   const _projects = projects.map((pro) => (pro.projectLocation === project ? { ...pro, ...details } : pro));
   updateAppSettings({
     projects: _projects,

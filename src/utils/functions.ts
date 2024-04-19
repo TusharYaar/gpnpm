@@ -1,3 +1,5 @@
+import { DependencyUpgradeTypeMap } from "./constants";
+
 // TODO: Move the function to utils
 export const sortVersion = (a: string | string[], b: string | string[]) => {
   const aver = Array.isArray(a) ? a : a.split(".");
@@ -10,7 +12,14 @@ export const sortVersion = (a: string | string[], b: string | string[]) => {
 };
 
 export const sanitizeVersion = (version: string) => {
-  return version.replace(/\^|~/g, "");
+  const ver = version.match(/\d*\.\d*\.\d*/);
+  return ver && ver.length > 0 ? ver[0] : version;
+};
+export const determineUpgradeType = (version: string) => {
+  for (const t in DependencyUpgradeTypeMap) {
+    if (RegExp(DependencyUpgradeTypeMap[t]).test(version)) return t as keyof typeof DependencyUpgradeTypeMap;
+  }
+  return "EXACT" as keyof typeof DependencyUpgradeTypeMap;
 };
 
 export const getPackageLatestReleases = (current: string, versions: string[]) => {
@@ -27,8 +36,8 @@ export const getPackageLatestReleases = (current: string, versions: string[]) =>
   });
 
   return {
-    major: sortVersion(major, current) > 0 ? major.join(".") : false,
-    minor: sortVersion(minor, current) > 0 ? minor.join(".") : false,
-    patch: sortVersion(patch, current) > 0 ? patch.join(".") : false,
+    major: sortVersion(major, current) > 0 ? major.join(".") : undefined,
+    minor: sortVersion(minor, current) > 0 ? minor.join(".") : undefined,
+    patch: sortVersion(patch, current) > 0 ? patch.join(".") : undefined,
   };
 };

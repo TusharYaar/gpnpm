@@ -2,20 +2,20 @@ import { ipcMain, dialog } from "electron";
 import { readdir, lstat } from "node:fs/promises";
 import { join as pathJoin, basename, dirname } from "path";
 import fs from "fs";
-import { EXCLUDED_FOLDERS } from "../../utils/constants";
+import { EXCLUDED_FOLDERS } from "../../../utils/constants";
 import {
   addNewPackages,
   addNewProjectToStorage,
-  addPackageNPMDetails,
+  addPackagesNPMDetails,
   addScanFoldersToStorage,
   getAppSettings,
-  updatePackageUsedInDetails,
   updateProjectDetails,
 } from "../storage";
 import { sendInstruction, sendUpdateState, throwError } from "../../index";
 import axios from "axios";
 import { NPMRegistryPackageResponse, Package, Project } from "../../../types";
-import { getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../../utils/functions";
+import { determineUpgradeType, getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../../utils/functions";
+import { differenceInDays } from "date-fns";
 
 export const attachListeners = () => {
   ipcMain.handle("PROJECT:open-dialog", (_, type: "file" | "directory", allowMultiple: boolean) =>
@@ -27,6 +27,7 @@ export const attachListeners = () => {
   ipcMain.on("PROJECT:update", (_, project: string, updates: Partial<Project>) =>
     updateProjectDetails(project, updates)
   );
+  ipcMain.on("PROJECT:check-for-packages-update", () => checkForPackageDetails());
   console.log("ATTACHED PROJECTS");
 };
 
@@ -94,27 +95,30 @@ const handleAddProjects = async (folders: string[]) => {
     let scripts = {};
     let markdown = null;
     if (file !== null && file.dependencies) {
-      addNewPackages(file.dependencies, json);
+      addNewPackages(file.dependencies, folder, json);
       dependencies = Object.entries(file.dependencies).reduce((prev, [key, value]) => {
         return {
           ...prev,
           [key]: {
-            currect: value,
+            current: sanitizeVersion(value as string),
+            rawValue: value as string,
+            upgradeType: determineUpgradeType(value as string),
           },
         };
-      }, {});
+      }, dependencies);
     }
     if (file !== null && file.devDependencies) {
-      // // file.devDependencies, project;
-      addNewPackages(file.devDependencies, json);
+      addNewPackages(file.devDependencies, folder, json);
       devDependencies = Object.entries(file.devDependencies).reduce((prev, [key, value]) => {
         return {
           ...prev,
           [key]: {
-            currect: value,
+            current: sanitizeVersion(value as string),
+            rawValue: value as string,
+            upgradeType: determineUpgradeType(value as string),
           },
         };
-      }, {});
+      }, devDependencies);
     }
     if (file !== null && file.scripts) scripts = file.scripts;
 
@@ -126,12 +130,11 @@ const handleAddProjects = async (folders: string[]) => {
     const icon = await searchForFile("icon.png", folder);
 
     if (icon.length > 0) {
-      console.log(icon);
       addNewProjectToStorage(folder, title, dependencies, devDependencies, scripts, markdown, json, icon[0]);
     } else addNewProjectToStorage(folder, title, dependencies, devDependencies, scripts, markdown, json, null);
   }
   sendUpdateState("idle");
-  checkForPackageDetails();
+  // checkForPackageDetails();
   return true;
 };
 
@@ -147,30 +150,42 @@ const getFile = (path: string, type?: string) => {
   } else return null;
 };
 
-export const checkForPackageDetails = async (updateAll = false) => {
-  const { allPackages } = getAppSettings();
-  const total = Object.keys(allPackages).length;
-  let index = 0;
-  for (const pack in allPackages) {
-    ++index;
-    let details: Package["npm"];
-    if (!allPackages[pack].npm || updateAll) {
-      sendUpdateState(`fetching_package_details`, {
-        total,
-        current: index,
-        package: pack,
+export const checkForPackageDetails = async (packages = [] as string[]) => {
+  let progress = 0;
+  try {
+    const { allPackages } = getAppSettings();
+    sendUpdateState("fetching_package_details", { current: 0, total: 100 });
+    let packagesToUpdate = [];
+
+    if (packages.length > 0) packagesToUpdate = [...packages];
+    else
+      packagesToUpdate = Object.entries(allPackages).filter((pack) => {
+        return (
+          pack[1].npm === undefined ||
+          pack[1].npm.lastUpdated === undefined ||
+          differenceInDays(new Date(), new Date(pack[1].npm.lastUpdated)) > 0
+        );
       });
-      details = await fetchPackageDetailsFromRegistry(pack);
-      addPackageNPMDetails(pack, details);
-    }
+
+    const promises = packagesToUpdate.map((pack) => fetchPackageDetailsFromRegistry(pack[0]));
+    promises.map((p) =>
+      p.then(() => sendUpdateState("fetching_package_details", { current: ++progress, total: packagesToUpdate.length }))
+    );
+
+    const responses = await Promise.all(promises);
+    addPackagesNPMDetails(responses);
+  } catch (e) {
+    console.log(e);
+  } finally {
+    sendUpdateState("idle");
   }
-  sendUpdateState("idle");
   checkAvaliblePackageUpdateInProjects();
 };
 
 export const fetchPackageDetailsFromRegistry = async (pack: string) => {
   const { data } = await axios.get<NPMRegistryPackageResponse>(`https://registry.npmjs.org/${pack}`);
   const myPack: Package["npm"] = {
+    lastUpdated: new Date().toISOString(),
     name: pack,
     "dist-tags": data["dist-tags"],
     description: data.description,
@@ -187,25 +202,37 @@ export const fetchPackageDetailsFromRegistry = async (pack: string) => {
 };
 
 export const checkAvaliblePackageUpdateInProjects = async () => {
-  const { allPackages } = getAppSettings();
-  const total = Object.keys(allPackages).length;
-  let index = 0;
-  for (const pack in allPackages) {
-    ++index;
-    const usedIn: (typeof allPackages)[0]["usedIn"] = {};
+  const { projects, allPackages } = getAppSettings();
 
-    for (const [key, value] of Object.entries(allPackages[pack].usedIn)) {
-      usedIn[key] = {
-        ...value,
-        updates: getPackageLatestReleases(sanitizeVersion(value.version), allPackages[pack].npm.versions),
-      };
+  for (const project of projects) {
+    const dependencies: (typeof project)["dependencies"] = {};
+    const devDependencies: (typeof project)["devDependencies"] = {};
+    for (const dependency in project.dependencies) {
+      if (allPackages[dependency] !== undefined && allPackages[dependency].npm !== undefined) {
+        const versions = getPackageLatestReleases(
+          sanitizeVersion(project.dependencies[dependency].current),
+          allPackages[dependency].npm.versions
+        );
+        dependencies[dependency] = {
+          ...project.dependencies[dependency],
+          ...versions,
+        };
+      }
     }
-    sendUpdateState(`fetching_package_details`, {
-      total,
-      current: index,
-      package: pack,
-    });
-    updatePackageUsedInDetails(pack, usedIn);
+    for (const dependency in project.devDependencies) {
+      if (allPackages[dependency] !== undefined && allPackages[dependency].npm !== undefined) {
+        const versions = getPackageLatestReleases(
+          project.devDependencies[dependency].current,
+          allPackages[dependency].npm.versions
+        );
+        devDependencies[dependency] = {
+          ...project.devDependencies[dependency],
+          ...versions,
+        };
+      }
+    }
+    const lastCheckForUpdates = new Date().toISOString();
+    updateProjectDetails(project.projectLocation, { lastCheckForUpdates, dependencies, devDependencies });
   }
   sendUpdateState("idle");
 };

@@ -1,7 +1,9 @@
-import { Code, Flex, Tabs, Box, Title } from "@mantine/core";
+import { Code, Flex, Tabs, Box, Title, Text } from "@mantine/core";
 import React, { useMemo } from "react";
 import { Package } from "../../types";
 import PackageIcon from "./PackageIcon";
+import { sanitizeVersion } from "../../utils/functions";
+import { formatDistanceToNow } from "date-fns";
 
 type Props = {
   name: string;
@@ -11,7 +13,7 @@ type Props = {
 const ViewPackageItem = ({ name, details }: Props) => {
   const availibleUpdates = useMemo(() => {
     const updates = { major: 0, minor: 0, patch: 0 };
-    Object.values(details.usedIn).forEach((value) => {
+    details.usedIn.forEach((value) => {
       if (value.updates) {
         if (value.updates.major) updates.major++;
         if (value.updates.minor) updates.minor++;
@@ -34,6 +36,9 @@ const ViewPackageItem = ({ name, details }: Props) => {
           <PackageIcon pack={name} />
           <Title order={2}>{name}</Title>
         </Flex>
+        <Text>
+          Last Updated: {details?.npm?.lastUpdated ? formatDistanceToNow(new Date(details.npm.lastUpdated)) : "never"}
+        </Text>
         {JSON.stringify(availibleUpdates)}
       </Box>
       <Tabs defaultValue="projects">
@@ -43,8 +48,10 @@ const ViewPackageItem = ({ name, details }: Props) => {
           <Tabs.Tab value="raw"> Raw </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="projects">
-          {Object.keys(details.usedIn).map((project) => (
-            <div key={project}>{project} --</div>
+          {details.usedIn.map((project) => (
+            <div key={project.project}>
+              {project.project} -- {sanitizeVersion(project.version)}
+            </div>
           ))}
         </Tabs.Panel>
         <Tabs.Panel value="raw">

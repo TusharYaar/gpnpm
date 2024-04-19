@@ -1,3 +1,5 @@
+import { DependencyUpgradeTypeMap } from "./utils/constants";
+
 export interface SystemInfo {
   platform: "win32" | "darwin";
 }
@@ -5,6 +7,7 @@ export interface SystemInfo {
 export type SystemUpdateStates = "starting" | "getting-packages" | "getting-package-details" | "";
 
 export type Project = {
+  lastCheckForUpdates: string | null;
   projectLocation: string;
   packageJsonLocation: string;
   markdownLocation: string | null;
@@ -15,41 +18,36 @@ export type Project = {
   scripts: {
     [key: string]: string;
   };
-  dependencies: Record<
-    string,
-    {
-      currect: string;
-      wanted?: string;
-      major?: string;
-      minor?: string;
-      patch?: string;
-    }
-  >;
-  devDependencies: {
-    [key: string]: {
-      currect: string;
-      wanted?: string;
-      major?: string;
-      minor?: string;
-      patch?: string;
-    };
-  };
+  dependencies: Record<string, DependencyVersion>;
+  devDependencies: Record<string, DependencyVersion>;
+};
+
+export type DependencyVersion = {
+  rawValue: string;
+  upgradeType: keyof typeof DependencyUpgradeTypeMap;
+  current: string;
+  wanted?: string;
+
+  major?: string;
+  minor?: string;
+  patch?: string;
 };
 
 export type Package = {
   icon?: string;
   latest?: string;
   usedIn: {
-    [key: string]: {
-      version: string;
-      updates?: {
-        major: string | boolean;
-        minor: string | boolean;
-        patch: string | boolean;
-      };
+    project: string;
+    packageJsonLocation: string;
+    version: string;
+    updates?: {
+      major: string | boolean;
+      minor: string | boolean;
+      patch: string | boolean;
     };
-  };
+  }[];
   npm?: {
+    lastUpdated: string;
     _id: string;
     _rev: string;
     name: string;

@@ -30,6 +30,9 @@ const Menubar = () => {
         </Tooltip>
       </div>
       <div>
+        <ActionIcon size={40} variant="transparent" onClick={window.projectAPI.checkForPackagesUpdate}>
+          <TbFolderPlus size={24} />
+        </ActionIcon>
         <Tooltip label="Settings" position="right">
           <ActionIcon size={40} variant="transparent" component={Link} to="/settings">
             <TbSettings size={24} />

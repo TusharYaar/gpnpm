@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld("projectAPI", {
   updateProject: (project: string, updates: Partial<Project>) => ipcRenderer.send("PROJECT:update", project, updates),
   addNewProjects: (projects: string[]) => ipcRenderer.send("PROJECT:add-new-projects", projects),
   scanFoldersForProjects: (folders: string[]) => ipcRenderer.send("PROJECT:scan-folders-for-projects", folders),
+  checkForPackagesUpdate: () => ipcRenderer.send("PROJECT:check-for-packages-update"),
 });
 
 contextBridge.exposeInMainWorld("systemAPI", {

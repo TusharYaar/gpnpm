@@ -7,6 +7,7 @@ export interface projectAPI {
   updateProject: (project: string, update: Partial<Project>) => void;
   addNewProjects: (projects: string[]) => void;
   scanFoldersForProjects: (folders: string[]) => void;
+  checkForPackagesUpdate: () => void;
 }
 
 export interface systemAPI {

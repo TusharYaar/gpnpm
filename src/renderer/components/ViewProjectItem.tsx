@@ -1,9 +1,22 @@
-import { useCallback, useState, useEffect } from "react";
-import { Code, Flex, Tabs, Text, Box, Table, Breadcrumbs, Title, Divider, Image, Group, Button } from "@mantine/core";
+import { useCallback, useState, useEffect, useMemo } from "react";
+import {
+  Code,
+  Flex,
+  Tabs,
+  Text,
+  Box,
+  Table,
+  Breadcrumbs,
+  Title,
+  Divider,
+  Image,
+  Group,
+  Button,
+  Checkbox,
+} from "@mantine/core";
 import { TbPencil, TbBell, TbBellRingingFilled, TbBucket } from "react-icons/tb";
 import { Project } from "../../types";
 import { Remark } from "react-remark";
-import { sanitizeVersion } from "../../utils/functions";
 import image from "../assets/bg-9.png";
 import EditProjectModal from "./EditProjectModal";
 
@@ -16,19 +29,37 @@ const ViewProjectItem = ({ path, project }: Props) => {
   const [markdown, setMarkdown] = useState<null | string>(null);
   const [icon, setIcon] = useState("");
   const [packageJSON, setPackageJSON] = useState<null | string>(null);
-  // const [selected, setSelected] = useState([]);
+  const [selected, setSelected] = useState([]);
   const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
     getProjectIcon(project.iconLocation);
   }, [project]);
 
-  // const toggleSelected = useCallback((id: string) => {
-  //   setSelected((prev) => {
-  //     if (prev.includes(id)) return prev.filter((p) => p !== id);
-  //     else return [...prev, id];
-  //   });
-  // }, []);
+  const toggleSelected = useCallback((id: string, state: boolean) => {
+    setSelected((prev) => (state ? prev.concat(id) : prev.filter((p) => p !== id)));
+  }, []);
+  const toggleAll = useCallback(
+    (state: boolean) => {
+      setSelected(state ? Object.keys(project.dependencies) : []);
+    },
+    [project]
+  );
+
+  const tableData = useMemo(() => {
+    return Object.entries(project.dependencies).map((pack) => {
+      let wanted = pack[1].current;
+      if (pack[1].upgradeType === "ANY") wanted = pack[1]?.major ? pack[1].major : pack[1].current;
+      else if (pack[1].upgradeType === "MINOR") wanted = pack[1]?.minor ? pack[1].minor : pack[1].current;
+      else if (pack[1].upgradeType === "PATCH") wanted = pack[1]?.patch ? pack[1].patch : pack[1].current;
+
+      return {
+        name: pack[0],
+        current: pack[1].current,
+        wanted,
+      };
+    });
+  }, [project]);
 
   const openExternalLink = useCallback((link: string) => {
     console.log(link);
@@ -121,17 +152,29 @@ const ViewProjectItem = ({ path, project }: Props) => {
           <Table striped withTableBorder>
             <Table.Thead>
               <Table.Tr>
+                <Table.Th>
+                  <Checkbox
+                    onChange={(event) => toggleAll(event.currentTarget.checked)}
+                    checked={selected.length === tableData.length}
+                  />
+                </Table.Th>
                 <Table.Th>Packages</Table.Th>
                 <Table.Th>Current</Table.Th>
                 <Table.Th>Wanted</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {Object.entries(project.dependencies).map(([pack, values]) => (
-                <Table.Tr key={pack}>
-                  <Table.Td>{pack}</Table.Td>
-                  <Table.Td>{sanitizeVersion(values.currect)}</Table.Td>
-                  <Table.Td>{values.wanted || ""}</Table.Td>
+              {tableData.map((pack) => (
+                <Table.Tr key={pack.name}>
+                  <Table.Td>
+                    <Checkbox
+                      onChange={(event) => toggleSelected(pack.name, event.currentTarget.checked)}
+                      checked={selected.includes(pack.name)}
+                    />
+                  </Table.Td>
+                  <Table.Td>{pack.name}</Table.Td>
+                  <Table.Td>{pack.current}</Table.Td>
+                  <Table.Td>{pack.wanted}</Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>
