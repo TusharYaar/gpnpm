@@ -4,9 +4,10 @@ import { useApp } from "../context/AppContext";
 
 type Props = {
   projects: string[];
+  opened: boolean;
 };
 
-const AddProjectModal = ({ projects }: Props) => {
+const AddProjectModal = ({opened, projects }: Props) => {
   const [selected, setSelected] = useState(Array(projects.length).fill(true));
   const { addProjects } = useApp();
 
@@ -20,7 +21,7 @@ const AddProjectModal = ({ projects }: Props) => {
 
   return (
     <Modal
-      opened={true}
+      opened={opened}
       onClose={() => handleAddFolders([], [])}
       title="Choose Projects To Add"
       size="calc(100vw - 87px)"

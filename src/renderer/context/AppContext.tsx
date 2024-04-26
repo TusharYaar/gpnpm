@@ -3,6 +3,11 @@ import AppSettings from "../../main/modules/storage/AppSettings";
 import { SystemCurrentStateType, SystemInfo } from "../../types";
 import AddProjectModal from "../components/AddProjectModal";
 import ErrorModal from "../components/ErrorModal";
+import { MantineProvider } from "@mantine/core";
+import Themes from "../themes";
+
+import "../components/styles.css";
+import SettingsModal from "../components/SettingsModal";
 
 const initialStore = new AppSettings();
 
@@ -14,6 +19,10 @@ type ContextProps = {
   store: AppSettings;
   handleAddScanFolder: () => void;
   addProjects: (projects: string[]) => void;
+
+  // Settings Modal
+  settingsModalVisible: boolean;
+  toggleSettingsModalVisible: () => void;
 };
 
 const AppContext = createContext<ContextProps>({
@@ -26,11 +35,14 @@ const AppContext = createContext<ContextProps>({
   systemInfo: null,
   systemCurrentState: null,
   store: initialStore,
+  settingsModalVisible: false,
+  toggleSettingsModalVisible: () => {},
 });
 
 export const useApp = () => useContext(AppContext);
 
-export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
+export const AppProvider = ({ children }: { children: React.ReactNode | React.ReactNode[] }) => {
+  // const {} = useMantineColorScheme();
   const [projectOptions, setProjectOptions] = useState([]);
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [error, setError] = useState<{ error: string; id: string }[]>([]);
@@ -39,6 +51,8 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
     data: null,
   });
   const [store, setStore] = useState<AppSettings>(initialStore);
+
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 
   const dismissError = useCallback((id: string) => {
     setError((prev) => prev.filter((err) => err.id !== id));
@@ -80,6 +94,8 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
     }
   }, []);
 
+  const toggleSettingsModalVisible = useCallback(() => setSettingsModalVisible((prev) => !prev), []);
+
   useEffect(() => {
     getSystemInfo();
   }, [getSystemInfo]);
@@ -110,11 +126,20 @@ export const AppProvider = ({ children }: { children: JSX.Element | JSX.Element[
         systemCurrentState,
         handleAddScanFolder,
         store,
+        settingsModalVisible,
+        toggleSettingsModalVisible,
       }}
     >
-      {projectOptions.length > 0 && <AddProjectModal projects={projectOptions} />}
-      {error.length > 0 && <ErrorModal error={error[0]} dismissError={dismissError} />}
-      {children}
+      <MantineProvider theme={Themes[store.settings.theme]} defaultColorScheme="dark">
+        <AddProjectModal opened={projectOptions.length > 0} projects={projectOptions} />
+        <ErrorModal
+          opened={error.length > 0}
+          error={error.length > 0 ? error[0] : undefined}
+          dismissError={dismissError}
+        />
+        <SettingsModal opened={settingsModalVisible} />
+        {children}
+      </MantineProvider>
     </AppContext.Provider>
   );
 };

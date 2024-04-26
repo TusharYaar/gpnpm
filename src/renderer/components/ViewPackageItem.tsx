@@ -25,13 +25,7 @@ const ViewPackageItem = ({ name, details }: Props) => {
   }, [details]);
   return (
     <div>
-      <Box
-      // sx={(theme) => ({
-      //   backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[6] : theme.colors.blue[1],
-      //   padding: theme.spacing.sm,
-      //   borderRadius: theme.radius.md,
-      // })}
-      >
+      <Box>
         <Flex>
           <PackageIcon pack={name} />
           <Title order={2}>{name}</Title>

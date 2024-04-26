@@ -12,3 +12,17 @@
 .visibleOnHover:hover {
     opacity: 1;
 }
+
+@font-face {
+    font-family: 'Lexend';
+    src: url("../assets/fonts/Lexend-VariableFont_wght.ttf") format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+  }
+
+@font-face {
+    font-family: 'KodeMono';
+    src: url("../assets/fonts/KodeMono-VariableFont_wght.ttf") format('truetype');
+    font-weight: 400 700;
+    font-style: normal;
+}

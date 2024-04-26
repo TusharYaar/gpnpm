@@ -1,8 +1,8 @@
-import { Button, Box, Flex, Menu, ScrollArea, TextInput, Title } from "@mantine/core";
+import { Button, Flex, Menu, ScrollArea, TextInput, Title, NavLink, ActionIcon, Text } from "@mantine/core";
 import { useDeferredValue, useMemo, useState } from "react";
 import ViewProjectItem from "../components/ViewProjectItem";
 import { useApp } from "../context/AppContext";
-import ListItem from "../components/ListItem";
+// import { TbArrowBarLeft, TbArrowBarRight } from "react-icons/tb";
 const sortOptions = {
   name_ascending: {
     label: "Name: Ascending",
@@ -17,7 +17,7 @@ const AllProjects = () => {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [sortBy, setSortBy] = useState<keyof typeof sortOptions>("name_ascending");
-
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeProject, setActiveProject] = useState<string | null>(null);
 
   const projects = useMemo(() => {
@@ -31,49 +31,64 @@ const AllProjects = () => {
     return filtered;
   }, [store, sortBy, deferredSearch]);
   return (
-    <Flex style={{ height: "calc(100vh - 50px)" }} direction="row">
-      <ScrollArea style={{ width: "50%" }} p="sm">
-        <Flex justify="space-between" align="center">
-          <Title>All Projects</Title>
-          <Button>Add New </Button>
+    <Flex style={{ height: "calc(100vh - 25px)" }}>
+      <ScrollArea bg="#161328" w={sidebarCollapsed ? 60 : "30%"} maw="30%">
+        <Flex justify="space-between" align="center" direction="row" m="sm">
+          {!sidebarCollapsed && <Title order={2}>All Projects</Title>}
+          {/* <ActionIcon variant="subtle" onClick={() => setSidebarCollapsed((prev) => !prev)}>
+            {sidebarCollapsed ? <TbArrowBarRight /> : <TbArrowBarLeft />}
+          </ActionIcon> */}
         </Flex>
-        <Flex align="center" gap="sm">
-          <Title order={3}>{Object.keys(store.projects).length} </Title> Projects
-        </Flex>
-        <Box>
-          <TextInput value={search} onChange={(t) => setSearch(t.target.value)} placeholder="e.g. react" />
-        </Box>
-        <Flex direction="column" align="flex-end">
-          <Menu shadow="md" width={200}>
-            <Menu.Target>
-              <Button variant="subtle">{`Sort: ${sortOptions[sortBy].label}`}</Button>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Label>Sort By</Menu.Label>
-              {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
-                <Menu.Item onClick={() => setSortBy(option)} key={option}>
-                  {sortOptions[option].label}
-                </Menu.Item>
-              ))}
-              <Menu.Divider />
-            </Menu.Dropdown>
-          </Menu>
-        </Flex>
+        {sidebarCollapsed ? (
+          <></>
+        ) : (
+          <>
+            <Flex align="center" gap="sm" m="sm">
+              <Text size="sm">
+                <Text span size="lg" fw={500}>
+                  {`${Object.keys(store.projects).length} `}
+                </Text>
+                projects
+              </Text>
+            </Flex>
+            <TextInput
+              width="100%"
+              value={search}
+              onChange={(t) => setSearch(t.target.value)}
+              placeholder="e.g. react"
+              mx="md"
+            />
+            <Flex direction="column" align="flex-end" mx="sm" my="xs">
+              <Menu shadow="md" width={200}>
+                <Menu.Target>
+                  <Button variant="subtle" size="compact-xs">{`Sort: ${sortOptions[sortBy].label}`}</Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>Application</Menu.Label>
+                  {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
+                    <Menu.Item onClick={() => setSortBy(option)} key={option}>
+                      {sortOptions[option].label}
+                    </Menu.Item>
+                  ))}
+                  <Menu.Divider />
+                </Menu.Dropdown>
+              </Menu>
+            </Flex>
+          </>
+        )}
         {projects.map((project, index) => (
-          <ListItem
+          <NavLink
             key={`${project.title}_${index}`}
-            title={project.title}
-            selected={activeProject !== null && activeProject === project.projectLocation}
-            // path={project.projectLocation}
+            label={project.title}
+            description={`${Object.keys(project.dependencies).length} packages`}
+            active={activeProject !== null && activeProject === project.projectLocation}
             onClick={() => setActiveProject(project.projectLocation)}
           />
         ))}
       </ScrollArea>
-      <ScrollArea style={{ width: "100%" }}>
-        {activeProject !== null && (
-          <ViewProjectItem project={projects.find((p) => p.projectLocation === activeProject)} path={activeProject} />
-        )}
-      </ScrollArea>
+      {activeProject !== null && (
+        <ViewProjectItem project={projects.find((p) => p.projectLocation === activeProject)} path={activeProject} />
+      )}
     </Flex>
   );
 };

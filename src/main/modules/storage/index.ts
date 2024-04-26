@@ -18,7 +18,7 @@ export const attachListeners = () => {
 
 export const updateAppSettings = async (settings: Partial<AppSettings>) => {
   try {
-    const modified = new Date();
+    const modified = new Date().toISOString();
     if (settings) {
       const updated = { ...APP_SETTINGS, ...settings, modified };
       fs.writeFileSync(APP_SETTINGS_FILE_PATH, JSON.stringify(updated, null, 4));

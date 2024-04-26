@@ -1,12 +1,13 @@
 import { Package, Project } from "../../../types";
+import Themes from "../../../renderer/themes";
 class AppSettings {
   static latestVersion = "0.1";
   version: string;
-  created: Date;
-  modified: Date;
-  settings = {
-    theme: "light",
-    platform: "win32",
+  created: string;
+  modified: string;
+  settings: {
+    theme: keyof typeof Themes;
+    platform: string;
   };
 
   // Folders added by user to scan
@@ -21,13 +22,13 @@ class AppSettings {
   isInitialValue: boolean;
 
   constructor() {
-    const currentDate = new Date();
+    const currentDate = new Date().toISOString();
     this.created = currentDate;
     this.modified = currentDate;
     this.version = "0.1";
     this.settings = {
       platform: "win32",
-      theme: "light",
+      theme: "light_theme",
     };
     this.scanFolders = [];
     this.excludeFolders = [".git", ".vscode", "node_modules", ".webpack", ".vite"];

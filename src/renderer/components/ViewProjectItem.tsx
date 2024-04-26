@@ -4,7 +4,6 @@ import {
   Flex,
   Tabs,
   Text,
-  Box,
   Table,
   Breadcrumbs,
   Title,
@@ -13,6 +12,7 @@ import {
   Group,
   Button,
   Checkbox,
+  ScrollArea,
 } from "@mantine/core";
 import { TbPencil, TbBell, TbBellRingingFilled, TbBucket } from "react-icons/tb";
 import { Project } from "../../types";
@@ -98,7 +98,7 @@ const ViewProjectItem = ({ path, project }: Props) => {
   }, [project]);
 
   return (
-    <Box>
+    <ScrollArea style={{ flex: 1 }}>
       {showEdit && (
         <EditProjectModal project={project} onDismiss={() => setShowEdit(false)} onEditDetails={handleProjectUpdate} />
       )}
@@ -217,7 +217,7 @@ const ViewProjectItem = ({ path, project }: Props) => {
           <Code>{JSON.stringify(project, null, 2)}</Code>
         </Tabs.Panel>
       </Tabs>
-    </Box>
+    </ScrollArea>
   );
 };
 

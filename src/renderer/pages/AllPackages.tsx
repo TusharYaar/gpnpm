@@ -1,8 +1,21 @@
-import { Box, Button, Flex, Menu, ScrollArea, TextInput, Title } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Flex,
+  Menu,
+  NavLink,
+  ScrollArea,
+  Text,
+  TextInput,
+  Title,
+  Tooltip
+} from "@mantine/core";
 import { useMemo, useState, useDeferredValue } from "react";
-import PackageItem from "../components/PackageItem";
 import ViewPackageItem from "../components/ViewPackageItem";
 import { useApp } from "../context/AppContext";
+import PackageIcon from "../components/PackageIcon";
+import { TbArrowBarLeft, TbArrowBarRight } from "react-icons/tb";
 
 const sortOptions = {
   name_ascending: {
@@ -25,7 +38,8 @@ const AllPackages = () => {
   const [sortBy, setSortBy] = useState<keyof typeof sortOptions>("name_ascending");
   const deferredSearch = useDeferredValue(search);
   const [activePackage, setActivePackage] = useState("");
-
+  // const { colorScheme } = useMantineColorScheme();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const packages = useMemo(() => {
     if (!store) return {};
     const allKeys = Object.keys(store.allPackages).filter((p) =>
@@ -49,58 +63,71 @@ const AllPackages = () => {
   }, [store, sortBy, deferredSearch]);
 
   return (
-    <Flex style={{ height: "calc(100vh - 20px)" }}>
-      <ScrollArea>
-        <Box p="sm">
-          <Title>All Packages</Title>
-          <Flex align="center" gap="sm">
-            <Title order={3}>{Object.keys(store.allPackages).length} </Title>
-            node packages across
-            <Title order={3}>{Object.keys(store.projects).length}</Title>
-            projects
+    <Flex style={{ height: "calc(100vh - 25px)" }}>
+      <ScrollArea bg="#161328" w={sidebarCollapsed ? 60 : "30%"} maw="30%">
+        <Box>
+          <Flex justify="space-between" align="center" direction="row" m="sm">
+            {!sidebarCollapsed && <Title order={2}>All Packages</Title>}
+            <ActionIcon variant="subtle" onClick={() => setSidebarCollapsed((prev) => !prev)}>
+              {sidebarCollapsed ? <TbArrowBarRight /> : <TbArrowBarLeft />}
+            </ActionIcon>
           </Flex>
-          <Box>
-            <TextInput
-              width="100%"
-              value={search}
-              onChange={(t) => setSearch(t.target.value)}
-              placeholder="e.g. react"
-            />
-          </Box>
-          <Flex direction="column" align="flex-end">
-            <Menu shadow="md" width={200}>
-              <Menu.Target>
-                <Button variant="subtle">{`Sort: ${sortOptions[sortBy].label}`}</Button>
-              </Menu.Target>
-
-              <Menu.Dropdown>
-                <Menu.Label>Application</Menu.Label>
-                {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
-                  <Menu.Item onClick={() => setSortBy(option)} key={option}>
-                    {sortOptions[option].label}
-                  </Menu.Item>
-                ))}
-                <Menu.Divider />
-              </Menu.Dropdown>
-            </Menu>
-          </Flex>
-          {Object.keys(packages).map((pack) => (
-            <PackageItem
-              key={pack}
-              name={pack}
-              onClick={() => setActivePackage(pack)}
-              active={pack === activePackage}
-            />
+          {sidebarCollapsed ? (
+            <></>
+          ) : (
+            <>
+              <Flex align="center" gap="sm" m="sm">
+                <Text size="sm">
+                  <Text span size="lg" fw={500}>
+                    {Object.keys(store.allPackages).length}{" "}
+                  </Text>
+                  node packages across
+                  <Text span size="lg" fw={500}>
+                    {` ${Object.keys(store.projects).length} `}
+                  </Text>
+                  projects
+                </Text>
+              </Flex>
+              <TextInput
+                width="100%"
+                value={search}
+                onChange={(t) => setSearch(t.target.value)}
+                placeholder="e.g. react"
+                mx="md"
+              />
+              <Flex direction="column" align="flex-end" mx="sm" my="xs">
+                <Menu shadow="md" width={200}>
+                  <Menu.Target>
+                    <Button variant="subtle" size="compact-xs">{`Sort: ${sortOptions[sortBy].label}`}</Button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Label>Application</Menu.Label>
+                    {Object.keys(sortOptions).map((option: keyof typeof sortOptions) => (
+                      <Menu.Item onClick={() => setSortBy(option)} key={option}>
+                        {sortOptions[option].label}
+                      </Menu.Item>
+                    ))}
+                    <Menu.Divider />
+                  </Menu.Dropdown>
+                </Menu>
+              </Flex>
+            </>
+          )}
+          {Object.entries(packages).map((pack) => (
+            <Tooltip label={pack[0]} openDelay={500} position="right">
+              <NavLink
+                key={pack[0]}
+                label={sidebarCollapsed ? "" : pack[0]}
+                description={sidebarCollapsed ? "" : `Used in ${pack[1].usedIn.length} projects`}
+                active={activePackage !== null && activePackage === pack[0]}
+                onClick={() => setActivePackage(pack[0])}
+                leftSection={<PackageIcon pack={pack[0]} />}
+              />
+            </Tooltip>
           ))}
         </Box>
       </ScrollArea>
-      <ScrollArea w={"calc(100vh - 20px)"}>
-        {/* <Flex p="sm" flex={1}> */}
-        {activePackage.length > 0 && (
-          <ViewPackageItem details={store.allPackages[activePackage]} name={activePackage} />
-        )}
-        {/* </Flex> */}
-      </ScrollArea>
+      {activePackage.length > 0 && <ViewPackageItem details={store.allPackages[activePackage]} name={activePackage} />}
     </Flex>
   );
 };
