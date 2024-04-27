@@ -121,9 +121,9 @@ const AllPackages = () => {
             </>
           )}
           {Object.entries(packages).map((pack) => (
-            <Tooltip label={pack[0]} openDelay={500} position="right">
+            <Tooltip label={pack[0]} openDelay={500} position="right" key={pack[0]}>
               <NavLink
-                key={pack[0]}
+                w={sidebarCollapsed ? 60 : "100%"}
                 label={sidebarCollapsed ? "" : pack[0]}
                 description={sidebarCollapsed ? "" : `Used in ${pack[1].usedIn.length} projects`}
                 active={activePackage !== null && activePackage === pack[0]}

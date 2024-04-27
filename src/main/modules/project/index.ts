@@ -35,7 +35,6 @@ const handleOpenDialog = async (type: "file" | "directory", allowMultiple = fals
   //
   const properties = [];
   properties.push(type === "file" ? "openFile" : "openDirectory");
-  console.log(properties);
   if (allowMultiple) properties.push("multiSelections");
   try {
     sendUpdateState("wait_for_choose_folders");

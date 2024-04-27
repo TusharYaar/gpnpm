@@ -1,5 +1,5 @@
 import { Breadcrumbs, Button, Checkbox, Flex, Modal } from "@mantine/core";
-import React, { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useApp } from "../context/AppContext";
 
 type Props = {
@@ -7,9 +7,13 @@ type Props = {
   opened: boolean;
 };
 
-const AddProjectModal = ({opened, projects }: Props) => {
-  const [selected, setSelected] = useState(Array(projects.length).fill(true));
+const AddProjectModal = ({ opened, projects }: Props) => {
+  const [selected, setSelected] = useState([]);
   const { addProjects } = useApp();
+
+  useEffect(() => {
+    setSelected(Array(projects.length).fill(true));
+  }, [projects]);
 
   const toggleCheckbox = useCallback((index: number) => {
     setSelected((prev) => prev.map((c, i) => (i === index ? !c : c)));

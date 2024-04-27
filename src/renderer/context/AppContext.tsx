@@ -70,6 +70,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
   }, []);
 
   const addProjects = useCallback(async (projects: string[]) => {
+    console.log(projects);
     try {
       setProjectOptions([]);
       if (projects.length === 0) return;
