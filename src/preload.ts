@@ -2,6 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 import { contextBridge, ipcRenderer } from "electron";
 import { Project } from "./types";
+import AppSettings from "./main/modules/storage/AppSettings";
 
 contextBridge.exposeInMainWorld("projectAPI", {
   openDialog: (file: "file" | "directory", allowMultiple: boolean) =>
@@ -18,6 +19,7 @@ contextBridge.exposeInMainWorld("systemAPI", {
   openExternalLink: (link: string) => ipcRenderer.send("SYSTEM:open-external-link", link),
   runCommandInTerminal: (command: string) => ipcRenderer.send("SYSTEM:run-command", command),
   getStore: () => ipcRenderer.invoke("STORAGE:get-store"),
+  updateStore: (settings: Partial<AppSettings>) => ipcRenderer.send("STORAGE:update-store", settings),
   onUpdateCurrentState: (callback: () => void) => ipcRenderer.on("SYSTEM:update-current-state", callback),
   onNewInstruction: (callback: () => void) => ipcRenderer.on("SYSTEM:instruction", callback),
   onError: (callback: () => void) => ipcRenderer.on("SYSTEM:error", callback),

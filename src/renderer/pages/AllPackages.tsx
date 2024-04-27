@@ -9,7 +9,9 @@ import {
   Text,
   TextInput,
   Title,
-  Tooltip
+  Tooltip,
+  useMantineTheme,
+  useComputedColorScheme,
 } from "@mantine/core";
 import { useMemo, useState, useDeferredValue } from "react";
 import ViewPackageItem from "../components/ViewPackageItem";
@@ -38,7 +40,8 @@ const AllPackages = () => {
   const [sortBy, setSortBy] = useState<keyof typeof sortOptions>("name_ascending");
   const deferredSearch = useDeferredValue(search);
   const [activePackage, setActivePackage] = useState("");
-  // const { colorScheme } = useMantineColorScheme();
+  const colorScheme = useComputedColorScheme();
+  const { colors } = useMantineTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const packages = useMemo(() => {
     if (!store) return {};
@@ -63,10 +66,14 @@ const AllPackages = () => {
   }, [store, sortBy, deferredSearch]);
 
   return (
-    <Flex style={{ height: "calc(100vh - 25px)" }}>
-      <ScrollArea bg="#161328" w={sidebarCollapsed ? 60 : "30%"} maw="30%">
+    <Flex style={{ height: "calc(100vh - 25px)" }} bg={colorScheme === "dark" ? colors.dark[8] : colors.gray[0]}>
+      <ScrollArea
+        bg={colorScheme === "dark" ? colors.dark[7] : colors.gray[2]}
+        w={sidebarCollapsed ? 60 : "30%"}
+        maw="30%"
+      >
         <Box>
-          <Flex justify="space-between" align="center" direction="row" m="sm">
+          <Flex justify={sidebarCollapsed ? "center" : "space-between"} align="center" direction="row" m="sm">
             {!sidebarCollapsed && <Title order={2}>All Packages</Title>}
             <ActionIcon variant="subtle" onClick={() => setSidebarCollapsed((prev) => !prev)}>
               {sidebarCollapsed ? <TbArrowBarRight /> : <TbArrowBarLeft />}

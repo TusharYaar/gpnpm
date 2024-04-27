@@ -6,7 +6,6 @@ import CurrentOperation from "./components/CurrentOperation";
 import { Routes, Route, HashRouter } from "react-router-dom";
 import AllPackages from "./pages/AllPackages";
 import AllProjects from "./pages/AllProjects";
-import Settings from "./pages/Settings";
 import Raw from "./pages/Raw";
 
 const AppContainer = () => {
@@ -33,7 +32,6 @@ const AppContainer = () => {
             <Route path="/" element={<App />} />
             <Route path="/all_packages" element={<AllPackages />} />
             <Route path="/all_projects" element={<AllProjects />} />
-            <Route path="/settings" element={<Settings />} />
             <Route path="/raw" element={<Raw />} />
           </Routes>
         </AppShell.Main>

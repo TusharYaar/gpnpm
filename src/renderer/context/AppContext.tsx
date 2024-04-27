@@ -1,9 +1,9 @@
-import React, { useContext, createContext, useCallback, useState, useEffect } from "react";
+import React, { useContext, createContext, useCallback, useState, useEffect, useMemo } from "react";
 import AppSettings from "../../main/modules/storage/AppSettings";
 import { SystemCurrentStateType, SystemInfo } from "../../types";
 import AddProjectModal from "../components/AddProjectModal";
 import ErrorModal from "../components/ErrorModal";
-import { MantineProvider } from "@mantine/core";
+import { MantineProvider, createTheme } from "@mantine/core";
 import Themes from "../themes";
 
 import "../components/styles.css";
@@ -23,6 +23,7 @@ type ContextProps = {
   // Settings Modal
   settingsModalVisible: boolean;
   toggleSettingsModalVisible: () => void;
+  updateSettings: (settings: Partial<AppSettings>) => void;
 };
 
 const AppContext = createContext<ContextProps>({
@@ -37,6 +38,7 @@ const AppContext = createContext<ContextProps>({
   store: initialStore,
   settingsModalVisible: false,
   toggleSettingsModalVisible: () => {},
+  updateSettings: () => {},
 });
 
 export const useApp = () => useContext(AppContext);
@@ -96,6 +98,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
 
   const toggleSettingsModalVisible = useCallback(() => setSettingsModalVisible((prev) => !prev), []);
 
+  const updateSettings = useCallback((settings: Partial<AppSettings>) => window.systemAPI.updateStore(settings), []);
+
   useEffect(() => {
     getSystemInfo();
   }, [getSystemInfo]);
@@ -117,6 +121,17 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
     });
   }, []);
 
+  const theme = useMemo(() => {
+    return createTheme({
+      ...Themes[store.settings.theme].theme,
+      fontFamily: store.settings.primaryFont,
+      fontFamilyMonospace: store.settings.codeFont,
+      headings: {
+        fontFamily: store.settings.primaryFont,
+      },
+    } as unknown);
+  }, [store.settings]);
+
   return (
     <AppContext.Provider
       value={{
@@ -128,9 +143,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
         store,
         settingsModalVisible,
         toggleSettingsModalVisible,
+        updateSettings,
       }}
     >
-      <MantineProvider theme={Themes[store.settings.theme]} defaultColorScheme="dark">
+      <MantineProvider theme={theme} defaultColorScheme="dark">
         <AddProjectModal opened={projectOptions.length > 0} projects={projectOptions} />
         <ErrorModal
           opened={error.length > 0}

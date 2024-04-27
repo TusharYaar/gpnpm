@@ -1,7 +1,20 @@
-import { Button, Flex, Menu, ScrollArea, TextInput, Title, NavLink, ActionIcon, Text } from "@mantine/core";
+import {
+  Button,
+  Flex,
+  Menu,
+  ScrollArea,
+  TextInput,
+  Title,
+  NavLink,
+  ActionIcon,
+  Text,
+  useComputedColorScheme,
+  useMantineTheme,
+} from "@mantine/core";
 import { useDeferredValue, useMemo, useState } from "react";
 import ViewProjectItem from "../components/ViewProjectItem";
 import { useApp } from "../context/AppContext";
+import { TbArrowBarLeft, TbArrowBarRight } from "react-icons/tb";
 // import { TbArrowBarLeft, TbArrowBarRight } from "react-icons/tb";
 const sortOptions = {
   name_ascending: {
@@ -19,6 +32,8 @@ const AllProjects = () => {
   const [sortBy, setSortBy] = useState<keyof typeof sortOptions>("name_ascending");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeProject, setActiveProject] = useState<string | null>(null);
+  const colorScheme = useComputedColorScheme();
+  const { colors } = useMantineTheme();
 
   const projects = useMemo(() => {
     if (!store.projects) return [];
@@ -31,13 +46,19 @@ const AllProjects = () => {
     return filtered;
   }, [store, sortBy, deferredSearch]);
   return (
-    <Flex style={{ height: "calc(100vh - 25px)" }}>
-      <ScrollArea bg="#161328" w={sidebarCollapsed ? 60 : "30%"} maw="30%">
+    <Flex style={{ height: "calc(100vh - 25px)" }} bg={colorScheme === "dark" ? colors.dark[8] : colors.gray[0]}>
+      <ScrollArea
+        bg={colorScheme === "dark" ? colors.dark[7] : colors.gray[2]}
+        w={sidebarCollapsed ? 60 : "30%"}
+        maw="30%"
+      >
         <Flex justify="space-between" align="center" direction="row" m="sm">
           {!sidebarCollapsed && <Title order={2}>All Projects</Title>}
-          {/* <ActionIcon variant="subtle" onClick={() => setSidebarCollapsed((prev) => !prev)}>
-            {sidebarCollapsed ? <TbArrowBarRight /> : <TbArrowBarLeft />}
-          </ActionIcon> */}
+          {false && (
+            <ActionIcon variant="subtle" onClick={() => setSidebarCollapsed((prev) => !prev)}>
+              {sidebarCollapsed ? <TbArrowBarRight /> : <TbArrowBarLeft />}
+            </ActionIcon>
+          )}
         </Flex>
         {sidebarCollapsed ? (
           <></>

@@ -1,4 +1,4 @@
-import { Tooltip, ActionIcon, Flex } from "@mantine/core";
+import { Tooltip, ActionIcon, Flex, useComputedColorScheme, useMantineTheme } from "@mantine/core";
 import { useApp } from "../context/AppContext";
 import {
   TbFolderPlus,
@@ -14,8 +14,16 @@ import { Link, useLocation } from "react-router-dom";
 const Menubar = () => {
   const location = useLocation();
   const { handleAddScanFolder, settingsModalVisible, toggleSettingsModalVisible } = useApp();
+  const scheme = useComputedColorScheme();
+  const { colors } = useMantineTheme();
   return (
-    <Flex justify="space-between" direction="column" align="center" flex="1">
+    <Flex
+      justify="space-between"
+      direction="column"
+      align="center"
+      flex="1"
+      bg={scheme === "dark" ? colors.dark[8] : colors.gray[0]}
+    >
       <div>
         <Tooltip label="Add New Folder" position="right">
           <ActionIcon size={40} variant="transparent" onClick={handleAddScanFolder}>

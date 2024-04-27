@@ -12,6 +12,7 @@ let APP_SETTINGS = new AppSettings();
 
 export const attachListeners = () => {
   ipcMain.handle("STORAGE:get-store", getAppSettings);
+  ipcMain.on("STORAGE:update-store", (_, settings: Partial<AppSettings>) => updateAppSettings(settings));
   console.log("ATTACHED STORAGE");
   getAppSettings();
 };
@@ -32,15 +33,20 @@ export const updateAppSettings = async (settings: Partial<AppSettings>) => {
 };
 
 export const getAppSettings = (): AppSettings => {
+  let settings = new AppSettings();
   if (APP_SETTINGS.isInitialValue) {
-    let settings: AppSettings;
     const settingsExist = fs.existsSync(APP_SETTINGS_FILE_PATH);
     if (settingsExist) {
       const buffer = fs.readFileSync(APP_SETTINGS_FILE_PATH, "utf-8");
       settings = JSON.parse(buffer.toString()) as AppSettings;
+      const version = typeof settings.version === "number" ? settings.version : parseFloat(settings.version);
+      if (version < AppSettings.latestVersion) {
+        settings = updateSettingsFile(settings, version);
+        updateAppSettings(settings);
+      }
     } else {
-      settings = new AppSettings();
       settings.isInitialValue = false;
+      updateAppSettings(settings);
     }
     APP_SETTINGS = settings;
     return settings;
@@ -148,4 +154,18 @@ export const updateProjectDetails = (project: string, details: Partial<Project>)
   updateAppSettings({
     projects: _projects,
   });
+};
+
+const updateSettingsFile = (settings: Partial<AppSettings>, version: number) => {
+  const tempNewSettings = new AppSettings();
+  const newSettings = { ...settings, version: AppSettings.latestVersion };
+  console.log("updating store");
+  if (version < AppSettings.latestVersion) {
+    newSettings.settings = {
+      ...tempNewSettings.settings,
+      ...settings.settings,
+    };
+  }
+
+  return newSettings as AppSettings;
 };

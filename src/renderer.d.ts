@@ -15,6 +15,7 @@ export interface systemAPI {
   runCommandInTerminal: (command: string) => void;
   getSystemInfo: () => Promise<SystemInfo>;
   getStore: () => Promise<AppSettings>;
+  updateStore: (settings: Partial<AppSettings>) => void;
   onUpdateCurrentState: (callback) => void;
   onNewInstruction: (callback) => void;
   onError: (callback) => void;
