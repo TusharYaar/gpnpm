@@ -40,16 +40,20 @@ const createWindow = (): void => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
+
+  mainWindow.once("ready-to-show", () => {
+    PROJECT.runOnReady();
+  });
 };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
+  createWindow();
+  STORAGE.attachListeners();
   PROJECT.attachListeners();
   SYSTEM.attachListeners();
-  STORAGE.attachListeners();
-  createWindow();
   sendUpdateState("ready");
 });
 
@@ -89,6 +93,14 @@ export const updateStore = (store: AppSettings) => {
 export const throwError = (error: string | object) => {
   if (mainWindow) mainWindow.webContents.send("SYSTEM:error", error);
 };
+
+export const updateProgressBar = (progress: number) => {
+  // TODO: Add mode for windows
+  if (progress > 1) progress = 1;
+  if (progress < 0) progress = -1;
+  if (mainWindow) mainWindow.setProgressBar(progress);
+};
+
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.

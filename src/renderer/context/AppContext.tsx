@@ -1,6 +1,6 @@
 import React, { useContext, createContext, useCallback, useState, useEffect, useMemo } from "react";
 import AppSettings from "../../main/modules/storage/AppSettings";
-import { SystemCurrentStateType, SystemInfo } from "../../types";
+import { SystemCurrentStateType } from "../../types";
 import AddProjectModal from "../components/AddProjectModal";
 import ErrorModal from "../components/ErrorModal";
 import { MantineProvider, createTheme } from "@mantine/core";
@@ -13,7 +13,7 @@ const initialStore = new AppSettings();
 
 type ContextProps = {
   openDialog: (type: "file" | "directory", allowMultiple: boolean) => Promise<string[]>;
-  systemInfo: SystemInfo | null;
+  // systemInfo: SystemInfo | null;
   // TODO: ADD A TYPE
   systemCurrentState: SystemCurrentStateType;
   store: AppSettings;
@@ -33,7 +33,7 @@ const AppContext = createContext<ContextProps>({
     return;
   },
   handleAddScanFolder: () => {},
-  systemInfo: null,
+  // systemInfo: null,
   systemCurrentState: null,
   store: initialStore,
   settingsModalVisible: false,
@@ -46,7 +46,7 @@ export const useApp = () => useContext(AppContext);
 export const AppProvider = ({ children }: { children: React.ReactNode | React.ReactNode[] }) => {
   // const {} = useMantineColorScheme();
   const [projectOptions, setProjectOptions] = useState([]);
-  const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
+  // const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [error, setError] = useState<{ error: string; id: string }[]>([]);
   const [systemCurrentState, setSystemCurrentState] = useState<SystemCurrentStateType>({
     state: "idle",
@@ -80,12 +80,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
     }
   }, []);
 
-  const getSystemInfo = useCallback(async () => {
-    const response = await window.systemAPI.getSystemInfo();
-    const store = await window.systemAPI.getStore();
-    setStore(store);
-    setSystemInfo(response);
-  }, []);
+  // const getSystemInfo = useCallback(async () => {
+  //   const response = await window.systemAPI.getSystemInfo();
+  //   const store = await window.systemAPI.getStore();
+  //   setStore(store);
+  //   setSystemInfo(response);
+  // }, []);
 
   const handleAddScanFolder = useCallback(async () => {
     try {
@@ -101,9 +101,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
 
   const updateSettings = useCallback((settings: Partial<AppSettings>) => window.systemAPI.updateStore(settings), []);
 
-  useEffect(() => {
-    getSystemInfo();
-  }, [getSystemInfo]);
+  // useEffect(() => {
+  //   getSystemInfo();
+  // }, [getSystemInfo]);
 
   useEffect(() => {
     window.systemAPI.onUpdateCurrentState((_event: unknown, value: SystemCurrentStateType) => {
@@ -137,7 +137,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
     <AppContext.Provider
       value={{
         openDialog,
-        systemInfo,
         addProjects,
         systemCurrentState,
         handleAddScanFolder,

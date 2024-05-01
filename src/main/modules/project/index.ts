@@ -7,15 +7,15 @@ import {
   addNewPackages,
   addNewProjectToStorage,
   addPackagesNPMDetails,
-  addScanFoldersToStorage,
   getAppSettings,
+  updateAppSettings,
   updateProjectDetails,
 } from "../storage";
-import { sendInstruction, sendUpdateState, throwError } from "../../index";
+import { sendInstruction, sendUpdateState, throwError, updateProgressBar } from "../../index";
 import axios from "axios";
 import { NPMRegistryPackageResponse, Package, Project } from "../../../types";
 import { determineUpgradeType, getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../../utils/functions";
-import { differenceInDays } from "date-fns";
+import { differenceInSeconds } from "date-fns";
 
 export const attachListeners = () => {
   ipcMain.handle("PROJECT:open-dialog", (_, type: "file" | "directory", allowMultiple: boolean) =>
@@ -31,6 +31,18 @@ export const attachListeners = () => {
   console.log("ATTACHED PROJECTS");
 };
 
+export const runOnReady = async () => {
+  const { scanFolders, settings, lastUpdatesScan } = getAppSettings();
+
+  const current = new Date();
+  // if (!lastFolderScan || differenceInSeconds(current, new Date(lastFolderScan)) > settings.projectScanInterval) {
+  await scanFolderForProjects(scanFolders);
+  // updateAppSettings({ lastFolderScan: current.toISOString() });
+  // }
+  if (!lastUpdatesScan || differenceInSeconds(current, new Date(lastUpdatesScan)) > settings.projectScanInterval) {
+    await checkAvaliblePackageUpdateInProjects();
+  }
+};
 const handleOpenDialog = async (type: "file" | "directory", allowMultiple = false) => {
   //
   const properties = [];
@@ -49,13 +61,16 @@ const handleOpenDialog = async (type: "file" | "directory", allowMultiple = fals
 };
 
 export const scanFolderForProjects = async (folders: string[]) => {
-  addScanFoldersToStorage(folders);
+  const { scanFolders, projects } = getAppSettings();
+  const unique = new Set(scanFolders.concat(...folders));
+  updateAppSettings({ scanFolders: Array.from(unique) });
   sendUpdateState("searching_for_projects");
+ const old_projects = projects.map((p) => p.projectLocation);
   try {
     for (const folder of folders) {
-      let projects = await searchForFile("package.json", folder);
-      projects = projects.map((pro) => dirname(pro));
-      sendInstruction({ instruction: "select-new-projects", data: projects });
+      let new_projects = await searchForFile("package.json", folder);
+      new_projects = new_projects.map((pro) => dirname(pro)).filter((pro) => !old_projects.includes(pro));
+      sendInstruction({ instruction: "select-new-projects", data: new_projects });
     }
   } catch (e) {
     console.log(e);
@@ -151,31 +166,49 @@ const getFile = (path: string, type?: string) => {
 
 export const checkForPackageDetails = async (packages = [] as string[]) => {
   let progress = 0;
+
   try {
-    const { allPackages } = getAppSettings();
+    const { allPackages, settings } = getAppSettings();
     sendUpdateState("fetching_package_details", { current: 0, total: 100 });
     let packagesToUpdate = [];
-
-    if (packages.length > 0) packagesToUpdate = [...packages];
-    else
+    if (packages.length > 0) {
+      packagesToUpdate = [...packages];
+    } else {
       packagesToUpdate = Object.entries(allPackages).filter((pack) => {
         return (
           pack[1].npm === undefined ||
           pack[1].npm.lastUpdated === undefined ||
-          differenceInDays(new Date(), new Date(pack[1].npm.lastUpdated)) > 0
+          differenceInSeconds(new Date(), new Date(pack[1].npm.lastUpdated)) > settings.npmScanInterval
         );
       });
+    }
 
     const promises = packagesToUpdate.map((pack) => fetchPackageDetailsFromRegistry(pack[0]));
     promises.map((p) =>
-      p.then(() => sendUpdateState("fetching_package_details", { current: ++progress, total: packagesToUpdate.length }))
+      p
+        .then(() => {
+          sendUpdateState("fetching_package_details", { current: ++progress, total: packagesToUpdate.length });
+          updateProgressBar(progress / packagesToUpdate.length);
+        })
+        .catch(() => {
+          console.log("Unableto update a package ");
+          // Show some error in windows
+          // updateProgressBar(progress / packagesToUpdate.length);
+        })
     );
+    const status = await Promise.allSettled(promises);
 
-    const responses = await Promise.all(promises);
+    const responses = status
+      .filter((status) => status.status === "fulfilled")
+      .map((status) => status.status === "fulfilled" && status.value);
+    // TODO: Send Notify user of failed packages
+    // const failed = status.filter(status => status.status === "rejected").map(status => status.status === "rejected" && status.reason);
+
     addPackagesNPMDetails(responses);
   } catch (e) {
     console.log(e);
   } finally {
+    updateProgressBar(-1);
     sendUpdateState("idle");
   }
   checkAvaliblePackageUpdateInProjects();

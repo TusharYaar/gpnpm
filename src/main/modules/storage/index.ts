@@ -84,13 +84,6 @@ export const addNewPackages = (packages: Record<string, string>, project: string
   }
 };
 
-export const addScanFoldersToStorage = (folders: string[]) => {
-  const unique = new Set(folders);
-  if (APP_SETTINGS.scanFolders)
-    for (const folder in APP_SETTINGS.scanFolders) unique.add(APP_SETTINGS.scanFolders[folder]);
-  updateAppSettings({ scanFolders: Array.from(unique) });
-};
-
 export const addNewProjectToStorage = (
   project: string,
   title = "",
