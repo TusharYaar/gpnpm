@@ -11,7 +11,7 @@ import {
   updateAppSettings,
   updateProjectDetails,
 } from "../storage";
-import { sendInstruction, sendUpdateState, throwError, updateProgressBar } from "../../index";
+import { sendInstruction, sendNotification, sendUpdateState, throwError, updateProgressBar } from "../../index";
 import axios from "axios";
 import { NPMRegistryPackageResponse, Package, Project } from "../../../types";
 import { determineUpgradeType, getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../../utils/functions";
@@ -65,12 +65,29 @@ export const scanFolderForProjects = async (folders: string[]) => {
   const unique = new Set(scanFolders.concat(...folders));
   updateAppSettings({ scanFolders: Array.from(unique) });
   sendUpdateState("searching_for_projects");
- const old_projects = projects.map((p) => p.projectLocation);
+  const oldProjects = projects.map((p) => p.projectLocation);
+  const newProjects = [];
   try {
     for (const folder of folders) {
-      let new_projects = await searchForFile("package.json", folder);
-      new_projects = new_projects.map((pro) => dirname(pro)).filter((pro) => !old_projects.includes(pro));
-      sendInstruction({ instruction: "select-new-projects", data: new_projects });
+      const scanProjects = await searchForFile("package.json", folder);
+      newProjects.push(...scanProjects);
+    }
+    const uniqueProjects = newProjects.map((pro) => dirname(pro)).filter((pro) => !oldProjects.includes(pro));
+    if (uniqueProjects.length > 0) {
+      sendNotification({
+        title: "New Projects Found",
+        description: `${uniqueProjects.length} were found, choose which projects to add.`,
+        silent: false,
+        type: "NEW_PROJECT_DETECTED",
+      });
+      sendInstruction({ instruction: "select-new-projects", data: uniqueProjects });
+    } else {
+      sendNotification({
+        title: "No now projects found",
+        description: `No new projects were found in the folders`,
+        silent: true,
+        type: "NEW_PROJECT_DETECTED",
+      });
     }
   } catch (e) {
     console.log(e);

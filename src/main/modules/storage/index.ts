@@ -3,7 +3,7 @@ import AppSettings from "./AppSettings";
 import { join } from "path";
 
 import { APP_SETTINGS_FILE_NAME } from "../../../utils/constants";
-import { throwError, updateStore } from "../../index";
+import { sendNotification, throwError, updateStore } from "../../index";
 import { ipcMain, app } from "electron";
 import { Package, Project } from "../../../types";
 
@@ -24,8 +24,20 @@ export const updateAppSettings = async (settings: Partial<AppSettings>) => {
       const updated = { ...APP_SETTINGS, ...settings, modified };
       fs.writeFileSync(APP_SETTINGS_FILE_PATH, JSON.stringify(updated, null, 4));
       APP_SETTINGS = updated;
+      sendNotification({
+        title: "Settings Updated",
+        description: `App settings were updated: ${Object.keys(settings).join(", ")}`,
+        silent: true,
+        type: "SETTINGS_UPDATE",
+      });
     } else throw Error("Unable to modify App Settings");
   } catch (e) {
+    sendNotification({
+      title: "Unable to update settings",
+      description: "Unable to update settings",
+      silent: false,
+      type: "SETTINGS_UPDATE",
+    });
     throw Error("Unable to modify App Settings");
   } finally {
     updateStore(APP_SETTINGS);
@@ -152,7 +164,6 @@ export const updateProjectDetails = (project: string, details: Partial<Project>)
 const updateSettingsFile = (settings: Partial<AppSettings>, version: number) => {
   const tempNewSettings = new AppSettings();
   const newSettings = { ...settings, version: AppSettings.latestVersion };
-  console.log("updating store");
   if (version < AppSettings.latestVersion) {
     newSettings.settings = {
       ...tempNewSettings.settings,

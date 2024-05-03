@@ -1,6 +1,6 @@
 import React, { useContext, createContext, useCallback, useState, useEffect, useMemo } from "react";
 import AppSettings from "../../main/modules/storage/AppSettings";
-import { SystemCurrentStateType } from "../../types";
+import { Notification, NotificationState, SystemCurrentStateType } from "../../types";
 import AddProjectModal from "../components/AddProjectModal";
 import ErrorModal from "../components/ErrorModal";
 import { MantineProvider, createTheme } from "@mantine/core";
@@ -20,6 +20,10 @@ type ContextProps = {
   handleAddScanFolder: () => void;
   addProjects: (projects: string[]) => void;
 
+  // Notifications
+  notifications: NotificationState;
+  markNotificationsRead: () => void;
+
   // Settings Modal
   settingsModalVisible: boolean;
   toggleSettingsModalVisible: () => void;
@@ -32,8 +36,13 @@ const AppContext = createContext<ContextProps>({
     project;
     return;
   },
+  notifications: {
+    unread: 0,
+    total: 0,
+    notifications: [],
+  },
+  markNotificationsRead: () => {},  
   handleAddScanFolder: () => {},
-  // systemInfo: null,
   systemCurrentState: null,
   store: initialStore,
   settingsModalVisible: false,
@@ -44,9 +53,9 @@ const AppContext = createContext<ContextProps>({
 export const useApp = () => useContext(AppContext);
 
 export const AppProvider = ({ children }: { children: React.ReactNode | React.ReactNode[] }) => {
-  // const {} = useMantineColorScheme();
+  const [notifications, setNotification] = useState<NotificationState>({ unread: 0, total: 0, notifications: [] });
+
   const [projectOptions, setProjectOptions] = useState([]);
-  // const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [error, setError] = useState<{ error: string; id: string }[]>([]);
   const [systemCurrentState, setSystemCurrentState] = useState<SystemCurrentStateType>({
     state: "idle",
@@ -70,7 +79,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
   }, []);
 
   const addProjects = useCallback(async (projects: string[]) => {
-    console.log(projects);
     try {
       setProjectOptions([]);
       if (projects.length === 0) return;
@@ -79,13 +87,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
       setError(e.message || e);
     }
   }, []);
-
-  // const getSystemInfo = useCallback(async () => {
-  //   const response = await window.systemAPI.getSystemInfo();
-  //   const store = await window.systemAPI.getStore();
-  //   setStore(store);
-  //   setSystemInfo(response);
-  // }, []);
 
   const handleAddScanFolder = useCallback(async () => {
     try {
@@ -101,10 +102,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
 
   const updateSettings = useCallback((settings: Partial<AppSettings>) => window.systemAPI.updateStore(settings), []);
 
-  // useEffect(() => {
-  //   getSystemInfo();
-  // }, [getSystemInfo]);
+  const markNotificationsRead = useCallback(() => setNotification((prev) => ({ ...prev, unread: 0 })), []);
 
+  // Attach Listeners
   useEffect(() => {
     window.systemAPI.onUpdateCurrentState((_event: unknown, value: SystemCurrentStateType) => {
       setSystemCurrentState(value);
@@ -113,14 +113,21 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
     window.systemAPI.onUpdateStore((_event: unknown, value: AppSettings) => {
       setStore(value);
     });
-  }, []);
+    window.systemAPI.onNewNotification((_event: unknown, data: Notification) => {
+      setNotification((prev) => ({
+        total: prev.total + 1,
+        unread: prev.unread + 1,
+        notifications: prev.notifications.concat(data),
+      }));
 
-  useEffect(() => {
-    window.systemAPI.onNewInstruction((_event: unknown, value: { instruction: string; data: unknown }) => {
-      // if (value.instruction === "open_add_folder") openFileAddDialog();
-      if (value.instruction === "select-new-projects") setProjectOptions(value.data as string[]);
+      window.systemAPI.onNewInstruction((_event: unknown, value: { instruction: string; data: unknown }) => {
+        // if (value.instruction === "open_add_folder") openFileAddDialog();
+        if (value.instruction === "select-new-projects") setProjectOptions(value.data as string[]);
+      });
     });
   }, []);
+
+  useEffect(() => {}, []);
 
   const theme = useMemo(() => {
     return createTheme({
@@ -144,6 +151,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
         settingsModalVisible,
         toggleSettingsModalVisible,
         updateSettings,
+        notifications,
+        markNotificationsRead,
       }}
     >
       <MantineProvider theme={theme} defaultColorScheme="dark">
@@ -159,3 +168,5 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
     </AppContext.Provider>
   );
 };
+
+

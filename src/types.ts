@@ -1,4 +1,4 @@
-import { DependencyUpgradeTypeMap } from "./utils/constants";
+import { DependencyUpgradeTypeMap,NotificationTypes } from "./utils/constants";
 
 export interface SystemInfo {
   platform: "win32" | "darwin";
@@ -144,3 +144,18 @@ export type SystemCurrentStateType =
         package: string;
       };
     };
+
+
+export type Notification = {
+  title: string;
+  description: string;
+  icon?: string;
+  type: typeof NotificationTypes[keyof typeof NotificationTypes];
+  silent: boolean;
+};
+
+export type NotificationState = {
+  unread: number;
+  total: number;
+  notifications: Notification[];
+};

@@ -20,6 +20,7 @@ export interface systemAPI {
   onNewInstruction: (callback) => void;
   onError: (callback) => void;
   onUpdateStore: (callback) => void;
+  onNewNotification: (callback) => void;
 }
 
 declare global {

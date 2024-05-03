@@ -24,4 +24,5 @@ contextBridge.exposeInMainWorld("systemAPI", {
   onNewInstruction: (callback: () => void) => ipcRenderer.on("SYSTEM:instruction", callback),
   onError: (callback: () => void) => ipcRenderer.on("SYSTEM:error", callback),
   onUpdateStore: (callback: () => void) => ipcRenderer.on("SYSTEM:update-store", callback),
+  onNewNotification: (callback: () => void) => ipcRenderer.on("SYSTEM:new-notification", callback),
 });
