@@ -21,6 +21,10 @@ export interface systemAPI {
   onError: (callback) => void;
   onUpdateStore: (callback) => void;
   onNewNotification: (callback) => void;
+
+  closeWindow: () => void;
+  maximizeWindow: () => void;
+  minimizeWindow: () => void;
 }
 
 declare global {

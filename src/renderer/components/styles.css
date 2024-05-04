@@ -13,6 +13,13 @@
     opacity: 1;
 }
 
+.draggable {
+    -webkit-app-region: drag;
+}
+
+.draggable div {
+    -webkit-app-region: no-drag;
+}
 @font-face {
     font-family: 'Lexend';
     src: url("../assets/fonts/Lexend-VariableFont_wght.ttf") format('truetype');

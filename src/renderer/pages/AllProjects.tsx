@@ -46,7 +46,7 @@ const AllProjects = () => {
     return filtered;
   }, [store, sortBy, deferredSearch]);
   return (
-    <Flex style={{ height: "calc(100vh - 25px)" }} bg={colorScheme === "dark" ? colors.dark[8] : colors.gray[0]}>
+    <Flex style={{ height: "calc(100vh - 25px - 32px)" }} bg={colorScheme === "dark" ? colors.dark[8] : colors.gray[0]}>
       <ScrollArea
         bg={colorScheme === "dark" ? colors.dark[7] : colors.gray[2]}
         w={sidebarCollapsed ? 60 : "30%"}

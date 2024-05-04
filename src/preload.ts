@@ -25,4 +25,8 @@ contextBridge.exposeInMainWorld("systemAPI", {
   onError: (callback: () => void) => ipcRenderer.on("SYSTEM:error", callback),
   onUpdateStore: (callback: () => void) => ipcRenderer.on("SYSTEM:update-store", callback),
   onNewNotification: (callback: () => void) => ipcRenderer.on("SYSTEM:new-notification", callback),
+
+  closeWindow: () => ipcRenderer.send("WINDOW:close"),
+  minimizeWindow: () => ipcRenderer.send("WINDOW:minimize"),
+  maximizeWindow: () => ipcRenderer.send("WINDOW:maximize"),
 });

@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 
 import * as PROJECT from "./modules/project";
 import * as SYSTEM from "./modules/system";
@@ -34,6 +34,7 @@ const createWindow = (): void => {
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
+    frame: false,
     icon: join(__dirname, "/assets/gpnpm_logo.png"),
   });
 
@@ -72,6 +73,20 @@ app.on("activate", () => {
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+
+ipcMain.on("WINDOW:close", () => {
+  if (mainWindow) mainWindow.close();
+});
+
+ipcMain.on("WINDOW:minimize", () => {
+  if (mainWindow) mainWindow.minimize();
+});
+ipcMain.on("WINDOW:maximize", () => {
+  if (mainWindow) {
+    if (mainWindow.isMaximized()) mainWindow.unmaximize();
+    else mainWindow.maximize();
   }
 });
 

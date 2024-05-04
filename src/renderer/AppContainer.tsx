@@ -7,6 +7,7 @@ import { Routes, Route, HashRouter } from "react-router-dom";
 import AllPackages from "./pages/AllPackages";
 import AllProjects from "./pages/AllProjects";
 import Raw from "./pages/Raw";
+import Titlebar from "./components/Titlebar";
 
 const AppContainer = () => {
   return (
@@ -20,7 +21,13 @@ const AppContainer = () => {
         footer={{
           height: 24,
         }}
+        header={{
+          height: 32
+        }}
       >
+        <AppShell.Header zIndex={200}>
+          <Titlebar />
+        </AppShell.Header>
         <AppShell.Navbar zIndex={1}>
           <Menubar />
         </AppShell.Navbar>
