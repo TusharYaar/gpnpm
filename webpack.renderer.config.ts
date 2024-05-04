@@ -17,7 +17,7 @@ rules.push(
     ],
   },
   {
-    test: /\.(png|jpe?g|gif)$/i,
+    test: /\.(png|jpe?g|gif|ico)$/i,
     use: [
       {
         loader: "file-loader",
