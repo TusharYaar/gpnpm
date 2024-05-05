@@ -1,4 +1,4 @@
-import { Code, Flex, Tabs, Box, Title, Text } from "@mantine/core";
+import { Code, Flex, Tabs, Box, Title, Text, ScrollArea } from "@mantine/core";
 import React, { useMemo } from "react";
 import { Package } from "../../types";
 import PackageIcon from "./PackageIcon";
@@ -24,7 +24,7 @@ const ViewPackageItem = ({ name, details }: Props) => {
     return updates;
   }, [details]);
   return (
-    <div>
+    <ScrollArea style={{ flex: 1 }}>
       <Box>
         <Flex>
           <PackageIcon pack={name} />
@@ -52,7 +52,7 @@ const ViewPackageItem = ({ name, details }: Props) => {
           <Code>{JSON.stringify(details, null, 4)}</Code>
         </Tabs.Panel>
       </Tabs>
-    </div>
+    </ScrollArea>
   );
 };
 

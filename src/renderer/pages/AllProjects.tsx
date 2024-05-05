@@ -11,11 +11,11 @@ import {
   useComputedColorScheme,
   useMantineTheme,
 } from "@mantine/core";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import ViewProjectItem from "../components/ViewProjectItem";
 import { useApp } from "../context/AppContext";
 import { TbArrowBarLeft, TbArrowBarRight } from "react-icons/tb";
-// import { TbArrowBarLeft, TbArrowBarRight } from "react-icons/tb";
+import { useParams } from "react-router-dom";
 const sortOptions = {
   name_ascending: {
     label: "Name: Ascending",
@@ -34,6 +34,11 @@ const AllProjects = () => {
   const [activeProject, setActiveProject] = useState<string | null>(null);
   const colorScheme = useComputedColorScheme();
   const { colors } = useMantineTheme();
+  const params = useParams();
+
+  useEffect(() => {
+    if (params["*"]) setActiveProject(params["*"]);
+  }, [params]);
 
   const projects = useMemo(() => {
     if (!store.projects) return [];

@@ -125,9 +125,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode | React.Re
         if (value.instruction === "select-new-projects") setProjectOptions(value.data as string[]);
       });
     });
+
   }, []);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    window.systemAPI.getStore().then((value) => setStore(value));
+  }, []);
 
   const theme = useMemo(() => {
     return createTheme({

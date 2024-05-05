@@ -13,11 +13,12 @@ import {
   useMantineTheme,
   useComputedColorScheme,
 } from "@mantine/core";
-import { useMemo, useState, useDeferredValue } from "react";
+import { useMemo, useState, useDeferredValue, useEffect } from "react";
 import ViewPackageItem from "../components/ViewPackageItem";
 import { useApp } from "../context/AppContext";
 import PackageIcon from "../components/PackageIcon";
 import { TbArrowBarLeft, TbArrowBarRight } from "react-icons/tb";
+import { useParams } from "react-router-dom";
 
 const sortOptions = {
   name_ascending: {
@@ -43,6 +44,13 @@ const AllPackages = () => {
   const colorScheme = useComputedColorScheme();
   const { colors } = useMantineTheme();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const params = useParams();
+
+  useEffect(() => {
+    if (params["*"]) setActivePackage(params["*"]);
+  }, [params]);
+
   const packages = useMemo(() => {
     if (!store) return {};
     const allKeys = Object.keys(store.allPackages).filter((p) =>

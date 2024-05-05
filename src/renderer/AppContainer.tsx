@@ -22,7 +22,7 @@ const AppContainer = () => {
           height: 24,
         }}
         header={{
-          height: 32
+          height: 32,
         }}
       >
         <AppShell.Header zIndex={200}>
@@ -37,8 +37,8 @@ const AppContainer = () => {
         <AppShell.Main>
           <Routes>
             <Route path="/" element={<App />} />
-            <Route path="/all_packages" element={<AllPackages />} />
-            <Route path="/all_projects" element={<AllProjects />} />
+            <Route path="/all_packages/*" element={<AllPackages />} />
+            <Route path="/all_projects/*" element={<AllProjects />} />
             <Route path="/raw" element={<Raw />} />
           </Routes>
         </AppShell.Main>

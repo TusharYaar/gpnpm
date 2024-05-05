@@ -38,7 +38,7 @@ const Menubar = () => {
         <Tooltip label="All Packages" position="right">
           <ActionIcon
             size={40}
-            variant={location.pathname === "/all_packages" ? "light" : "transparent"}
+            variant={location.pathname === "/all_packages/" ? "light" : "transparent"}
             component={Link}
             to="/all_packages"
           >
@@ -48,7 +48,7 @@ const Menubar = () => {
         <Tooltip label="All Projects" position="right">
           <ActionIcon
             size={40}
-            variant={location.pathname === "/all_projects" ? "light" : "transparent"}
+            variant={location.pathname === "/all_projects/" ? "light" : "transparent"}
             component={Link}
             to="/all_projects"
           >

@@ -34,7 +34,7 @@ const createWindow = (): void => {
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
-    frame: false,
+    // frame: false,
     icon: join(__dirname, "/assets/gpnpm_logo.png"),
   });
 
