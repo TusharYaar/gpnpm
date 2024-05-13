@@ -96,6 +96,26 @@ export const addNewPackages = (packages: Record<string, string>, project: string
   }
 };
 
+export const updatePackages = (packages: Record<string, string>, project: string, packageJsonLocation: string) => {
+  try {
+    const { allPackages } = getAppSettings();
+    for (const [key, version] of Object.entries(packages)) {
+      allPackages[key].usedIn = allPackages[key].usedIn.map((p) => {
+        if (p.project === project)
+          return {
+            project,
+            packageJsonLocation,
+            version,
+          };
+        else return p;
+      });
+    }
+    updateAppSettings({ allPackages });
+  } catch (e) {
+    throwError(e);
+  }
+};
+
 export const addNewProjectToStorage = (
   project: string,
   title = "",
@@ -138,20 +158,6 @@ export const addPackagesNPMDetails = (packages: Package["npm"][]) => {
   }
   updateAppSettings({ allPackages });
 };
-
-// export const updatePackageUsedInDetails = (pack: string, details: Package["usedIn"]) => {
-// if (APP_SETTINGS.allPackages[pack])
-//   APP_SETTINGS.allPackages[pack] = {
-//     ...APP_SETTINGS.allPackages[pack],
-//     usedIn: details,
-//   };
-// else
-//   APP_SETTINGS.allPackages[pack] = {
-//     latest: null,
-//     usedIn: details,
-//     npm: null,
-//   };
-// };
 
 export const updateProjectDetails = (project: string, details: Partial<Project>) => {
   const { projects } = getAppSettings();

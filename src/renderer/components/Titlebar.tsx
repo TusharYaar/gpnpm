@@ -22,7 +22,7 @@ const Titlebar = () => {
         .split(" ")
         .filter((k) => k.length > 0)
         .map((k) => k.toLowerCase()),
-    [search]
+    [search]  
   );
   const results = useMemo(() => {
     const projectResults = projects

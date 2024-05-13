@@ -1,5 +1,5 @@
 import AppSettings from "./main/modules/storage/AppSettings";
-import { SystemInfo } from "./types";
+import { DependencyUpdate, SystemInfo } from "./types";
 
 export interface projectAPI {
   openDialog: (type: "file" | "directory", allowMultiple?: boolean) => Promise<string[]>;
@@ -8,6 +8,8 @@ export interface projectAPI {
   addNewProjects: (projects: string[]) => void;
   scanFoldersForProjects: (folders: string[]) => void;
   checkForPackagesUpdate: () => void;
+  checkForPackagesUpdateInProject: (projects?: string[]) => void;
+  updateProjectDependencies: (project: string, updates: DependencyUpdate[]) => void;
 }
 
 export interface systemAPI {
@@ -16,6 +18,8 @@ export interface systemAPI {
   getSystemInfo: () => Promise<SystemInfo>;
   getStore: () => Promise<AppSettings>;
   updateStore: (settings: Partial<AppSettings>) => void;
+  openDirectory: (link: string) => void;
+
   onUpdateCurrentState: (callback) => void;
   onNewInstruction: (callback) => void;
   onError: (callback) => void;

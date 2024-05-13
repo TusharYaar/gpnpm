@@ -2,18 +2,19 @@ import { ipcMain, dialog } from "electron";
 import { readdir, lstat } from "node:fs/promises";
 import { join as pathJoin, basename, dirname } from "path";
 import fs from "fs";
-import { EXCLUDED_FOLDERS } from "../../../utils/constants";
+import { DependencyUpdatePrefix, EXCLUDED_FOLDERS } from "../../../utils/constants";
 import {
   addNewPackages,
   addNewProjectToStorage,
   addPackagesNPMDetails,
   getAppSettings,
   updateAppSettings,
+  updatePackages,
   updateProjectDetails,
 } from "../storage";
 import { sendInstruction, sendNotification, sendUpdateState, throwError, updateProgressBar } from "../../index";
 import axios from "axios";
-import { NPMRegistryPackageResponse, Package, Project } from "../../../types";
+import { DependencyUpdate, NPMRegistryPackageResponse, Package, Project } from "../../../types";
 import { determineUpgradeType, getPackageLatestReleases, sanitizeVersion, sortVersion } from "../../../utils/functions";
 import { differenceInSeconds } from "date-fns";
 
@@ -27,7 +28,13 @@ export const attachListeners = () => {
   ipcMain.on("PROJECT:update", (_, project: string, updates: Partial<Project>) =>
     updateProjectDetails(project, updates)
   );
+  ipcMain.on("PROJECT:update-dependencies", (_, project: string, updates: DependencyUpdate[]) =>
+    updateProjectDependencies(project, updates)
+  );
   ipcMain.on("PROJECT:check-for-packages-update", () => checkForPackageDetails());
+  ipcMain.on("PROJECT:check-package-update-in-project", (_, projects?: string[]) =>
+    checkAvaliblePackageUpdateInProjects(projects)
+  );
   console.log("ATTACHED PROJECTS");
 };
 
@@ -165,7 +172,6 @@ const handleAddProjects = async (folders: string[]) => {
     } else addNewProjectToStorage(folder, title, dependencies, devDependencies, scripts, markdown, json, null);
   }
   sendUpdateState("idle");
-  // checkForPackageDetails();
   return true;
 };
 
@@ -250,10 +256,11 @@ export const fetchPackageDetailsFromRegistry = async (pack: string) => {
   return myPack;
 };
 
-export const checkAvaliblePackageUpdateInProjects = async () => {
+export const checkAvaliblePackageUpdateInProjects = (selectedProjects?: string[]) => {
   const { projects, allPackages } = getAppSettings();
-
   for (const project of projects) {
+    if (selectedProjects && selectedProjects.length > 0 && !selectedProjects.includes(project.projectLocation))
+      continue;
     const dependencies: (typeof project)["dependencies"] = {};
     const devDependencies: (typeof project)["devDependencies"] = {};
     for (const dependency in project.dependencies) {
@@ -296,4 +303,53 @@ export const updateProjectTitle = async (pack: string, title: string) => {
 
 export const updateProjectNotification = async () => {
   //
+};
+
+const updateProjectDependencies = async (project: string, updates: DependencyUpdate[]) => {
+  const { projects } = getAppSettings();
+  const _project = projects.find((p) => p.projectLocation === project);
+
+  const file = getFile(_project.packageJsonLocation, "json");
+
+  if (file !== null) {
+    const updatedDependencies = updates.reduce((prev, curr) => {
+      if (_project.dependencies[curr.package])
+        prev[curr.package] = `${DependencyUpdatePrefix[_project.dependencies[curr.package].upgradeType]}${
+          curr.updateTo
+        }`;
+
+      return prev;
+    }, {});
+
+    const dependencies = {
+      ...file.dependencies,
+      ...updatedDependencies,
+    };
+
+    file.dependencies = dependencies;
+    const updatedPackageJson = file;
+    fs.writeFileSync(_project.packageJsonLocation, JSON.stringify(updatedPackageJson, null, 2), { encoding: "utf8" });
+
+    let _dependencies: Project["dependencies"] = {};
+
+    _dependencies = Object.entries(file.dependencies).reduce((prev, [key, value]) => {
+      return {
+        ...prev,
+        [key]: {
+          current: sanitizeVersion(value as string),
+          rawValue: value as string,
+          upgradeType: determineUpgradeType(value as string),
+        },
+      };
+    }, _dependencies);
+
+    updatePackages(updatedDependencies, project, _project.packageJsonLocation);
+    const _projects = projects.map((p) => {
+      if (p.projectLocation === project) p.dependencies = _dependencies;
+      return p;
+    });
+
+    updateAppSettings({ projects: _projects });
+    checkAvaliblePackageUpdateInProjects([project]);
+  }
 };

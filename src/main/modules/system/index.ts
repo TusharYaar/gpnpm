@@ -5,6 +5,7 @@ export const attachListeners = () => {
   ipcMain.handle("SYSTEM:get-info", getSystemInfo);
   ipcMain.on("SYSTEM:open-external-link", openExternalLink);
   ipcMain.on("SYSTEM:run-command", runCommandInTerminal);
+  ipcMain.on("SYSTEM:open-directory", openDirectory);
   console.log("ATTACHED SYSTEM");
 };
 
@@ -16,6 +17,10 @@ const getSystemInfo = () => {
 
 const openExternalLink = (event: IpcMainEvent, link: string) => {
   shell.openExternal(link);
+};
+
+const openDirectory = (event: IpcMainEvent, link: string) => {
+  shell.showItemInFolder(link);
 };
 
 const runCommandInTerminal = (event: IpcMainEvent, command: string) => {

@@ -14,6 +14,17 @@ export const DependencyUpgradeTypeMap = {
   EXACT: /.*/,
 } as const;
 
+export const DependencyUpdatePrefix = {
+  GREATER_THAN_EQAUL: ">=",
+  LESSER_THAN_EQAUL: "<=",
+  PATCH: "~",
+  MINOR: "^",
+  ANY: "",
+  GREATER_THAN: ">",
+  LESSER_THAN: "<",
+  EXACT: "",
+};
+
 export const NotificationTypes = {
   SETTINGS_UPDATE: "SETTINGS_UPDATE",
   APP_UPDATE_AVAILABLE: "APP_UPDATE_AVAILABLE",

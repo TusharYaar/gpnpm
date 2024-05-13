@@ -159,3 +159,10 @@ export type NotificationState = {
   total: number;
   notifications: Notification[];
 };
+
+export type DependencyUpdate = {
+  package: string;
+  current: string;
+  updateTo: string;
+  type: "wanted" | "minor" | "major" | "patch";
+};
